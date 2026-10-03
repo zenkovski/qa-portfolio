@@ -1,0 +1,16 @@
+{
+  "name": "qa-portfolio-saucedemo",
+  "version": "1.0.0",
+  "description": "AI-assisted test suite and bug reports for Sauce Demo (practice web shop)",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report reports/html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "typescript": "^7.0.2"
+  }
+}
