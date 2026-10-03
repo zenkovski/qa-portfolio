@@ -8,6 +8,8 @@ bug reports that a developer can reproduce in minutes.
 I am a beginner in testing. This is a practice project, not commercial experience.
 I wrote it to learn and to show how I work.
 
+**Live page with the test report:** https://lukas-qa.vercel.app
+
 ## Result
 
 - **60 test runs** (30 tests × desktop Chrome and Pixel 7 emulation) in about 16 seconds. All pass.
