@@ -102,17 +102,5 @@ test.describe('visual_user', () => {
   });
 });
 
-test.describe('performance_glitch_user', () => {
-  test('BUG-010 login takes under 2 seconds', { tag: '@bug' }, async ({ page }) => {
-    test.fail(true, 'BUG-010');
-    const t0 = Date.now();
-    await page.goto('/');
-    await page.locator('[data-test="username"]').fill('performance_glitch_user');
-    await page.locator('[data-test="password"]').fill('secret_sauce');
-    await page.locator('[data-test="login-button"]').click();
-    await page.waitForURL(/inventory/, { timeout: 15_000 });
-    const ms = Date.now() - t0;
-    console.log(`performance_glitch_user: login took ${ms} ms`);
-    expect(ms).toBeLessThan(2000);
-  });
-});
+// BUG-010 (slow login of performance_glitch_user) is tested in tests/performance.spec.ts on the median of 5 runs:
+// a single run was not reliable, because the delay of this account is not always the same.

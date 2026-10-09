@@ -92,7 +92,7 @@ See `reports/BUG-REPORTS.md` (BUG-001 to BUG-015, BUG-API-01 to 03). They are au
 | BUG-015 | visual_user header against standard_user | 0 different pixels | P3 | yes (bug) |
 | TC-PERF-01 | Login time, 5 runs per account | Median under 1.5 s (except the slow account) | P2 | yes (5 accounts) |
 | TC-PERF-02 | Login page load | Under 3 s | P3 | yes |
-| BUG-010b | Slow account against a normal one | At least 5 times slower (documents the delay) | P3 | yes |
+| BUG-010 | Slow account, median of 5 runs | Under 2 s | P2 | yes (bug) |
 
 ## API: Restful-Booker
 

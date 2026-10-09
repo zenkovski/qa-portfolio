@@ -37,11 +37,11 @@ test.describe('PERF: login time', () => {
     });
   }
 
-  test('BUG-010b the slow account is at least 5x slower than a normal one (documents the delay)', { tag: '@perf' }, async () => {
+  test('BUG-010 login takes under 2 seconds (median of 5 runs)', { tag: '@perf' }, async () => {
+    test.fail(true, 'BUG-010');
     const slow = result['performance_glitch_user'].median;
-    const normal = result['standard_user'].median;
-    console.log(`median login: standard ${normal} ms, performance_glitch_user ${slow} ms`);
-    expect(slow).toBeGreaterThan(normal * 5);
+    console.log(`median login: standard ${result['standard_user'].median} ms, performance_glitch_user ${slow} ms`);
+    expect(slow).toBeLessThan(2000);
   });
 
   test('TC-PERF-02 the login page loads in under 3 seconds', { tag: '@perf' }, async ({ page }) => {

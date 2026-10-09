@@ -126,9 +126,9 @@ Same steps and result as BUG-003, with the account `error_user`. Badge shows 3 i
 1. Open the login page, enter `performance_glitch_user` / `secret_sauce`, click Login.
 2. Measure the time until the catalog page loads.
 
-**Expected:** under 2 seconds (`standard_user`: about 0.4 s in my runs).
-**Actual:** about **5.5 seconds** (5511 ms on desktop, 5497 ms on the mobile emulation). The sort menu is also not usable right after the page appears.
-**Test:** `BUG-010`
+**Expected:** under 2 seconds (`standard_user`: about 0.15 s in my runs).
+**Actual:** about **5.2 seconds** (median of 5 runs). The delay is **not constant**: on the first GitHub Actions run, three attempts took only 0.23 to 0.38 s and the others about 5.4 s. A single-run test is therefore unreliable, so the test judges the median of 5 runs.
+**Test:** `BUG-010` (`tests/performance.spec.ts`)
 
 ---
 

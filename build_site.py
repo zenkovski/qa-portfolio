@@ -120,7 +120,7 @@ BUGS = [
          ev=[("BUG-015-desktop-chrome", "visual_user catalog")]),
     dict(id="BUG-010", type="perf", sev="Medium", where="Account performance_glitch_user · Login", title="Login takes about 5 seconds",
          steps=["Open the login page, enter performance_glitch_user / secret_sauce, click Login.", "Measure the time until the catalog loads."],
-         exp="Under 2 seconds (standard_user: well under 1 s).", act="About 5 seconds in every run (median of 5 runs in the chart on this page). The test depends on timing, so it is the one that shows as flaky.", test="BUG-010, BUG-010b, TC-PERF-01", ev=[]),
+         exp="Under 2 seconds (standard_user: well under 1 s).", act="About 5 seconds in most runs (median of 5 runs in the chart on this page). The delay is not constant: on the first GitHub Actions run, three attempts took only 0.23 to 0.38 s, the rest about 5.4 s. That is why the test judges the median of 5 runs and is the one that can show as flaky.", test="BUG-010 (tests/performance.spec.ts)", ev=[]),
     dict(id="BUG-011", type="security", sev="High", where="All accounts · Session", title="A made-up session cookie opens the catalog without a login",
          steps=["Open saucedemo.com in a fresh browser profile (not logged in).", "In developer tools set a cookie: name session-username, value standard_user, path /.", "Open /inventory.html."],
          exp="Access is refused, because no login happened.", act="The catalog opens and the shop works as standard_user. The “session” is just a user name in a cookie anyone can type.",

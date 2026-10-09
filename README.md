@@ -22,9 +22,9 @@ I am a beginner in testing. This is a practice project, not commercial experienc
 | Security (basic) | 7 | Forged session cookie, cookie flags, script in inputs, https, pages without login |
 | Visual | 2 | Pixel comparison inside one run (no stored baseline images) |
 | Performance | 7 | Login time, median of 5 runs per account |
-| Known bugs as tests | 20 | A bug written as a test, so the suite stays green and speaks up when it is fixed |
+| Known bugs as tests | 19 | A bug written as a test, so the suite stays green and speaks up when it is fixed |
 
-81 test cases, about 250 runs across **Chromium, Firefox, WebKit (Safari engine), a Pixel 7 phone emulation and the API**, in under 2 minutes.
+80 test cases, about 240 runs across **Chromium, Firefox, WebKit (Safari engine), a Pixel 7 phone emulation and the API**, in under 2 minutes.
 
 **18 bugs found**, each with steps, expected and actual result, evidence and a test: [reports/BUG-REPORTS.md](reports/BUG-REPORTS.md).
 Highlights: a session that is only a typed cookie (BUG-011), checkout accepts blank names (BUG-014), a moved cart icon found by pixel comparison (BUG-015), an API that answers 200 to a wrong password (BUG-API-01).
@@ -68,7 +68,7 @@ To rebuild the web page after a run: `python build_site.py` (needs Python and Pi
 
 The tests run against public sites over the internet. Two things I learned:
 
-- **The only flaky test is a timing test** (BUG-010, login speed of `performance_glitch_user`). It shows as "flaky" in the report instead of hiding. Speed is judged on the median of 5 runs, not on one run.
+- **The only flaky test is a timing test** (BUG-010, login speed of `performance_glitch_user`). The delay of that account is not constant: on the first GitHub Actions run three single attempts took 0.23 to 0.38 s and the rest about 5.4 s, so a single-run test failed there. I moved it to the median of 5 runs. It can still show as "flaky" in the report instead of hiding.
 - **A bug in my own test:** after adding WebKit, one test failed in 4 of 10 attempts. The shop was fine. My test read the product list before the page had drawn it. I fixed it by waiting for the page to be drawn; 15 of 15 attempts then passed. This is why I run more than one browser.
 
 ## How I used AI
