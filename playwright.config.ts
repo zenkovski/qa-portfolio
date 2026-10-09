@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Specs that only send HTTP requests (no page) run in the "api" project, once; all other specs run in the 4 browsers.
+const NO_BROWSER = /(\/api\/|rag\.api\.spec|rag\.data\.spec)/;
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30_000,
@@ -17,10 +20,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'desktop-chrome', use: { ...devices['Desktop Chrome'] }, testIgnore: /api\// },
-    { name: 'mobile-pixel', use: { ...devices['Pixel 7'] }, testIgnore: /api\// },
-    { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /api\// },
-    { name: 'desktop-webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /api\// },
-    { name: 'api', testMatch: /api\/.*\.spec\.ts/, use: { baseURL: undefined } },
+    { name: 'desktop-chrome', use: { ...devices['Desktop Chrome'] }, testIgnore: NO_BROWSER },
+    { name: 'mobile-pixel', use: { ...devices['Pixel 7'] }, testIgnore: NO_BROWSER },
+    { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: NO_BROWSER },
+    { name: 'desktop-webkit', use: { ...devices['Desktop Safari'] }, testIgnore: NO_BROWSER },
+    { name: 'api', testMatch: NO_BROWSER, use: { baseURL: undefined } },
   ],
 });

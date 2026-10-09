@@ -9,7 +9,9 @@
     "test:api": "playwright test --project=api",
     "test:a11y": "playwright test --grep @a11y --project=desktop-chrome",
     "test:security": "playwright test --grep @security --project=desktop-chrome",
-    "test:chrome": "playwright test --project=desktop-chrome --project=mobile-pixel --project=api"
+    "test:chrome": "playwright test --project=desktop-chrome --project=mobile-pixel --project=api",
+    "typecheck": "tsc --noEmit",
+    "test:rag": "playwright test tests/rag"
   },
   "keywords": [],
   "author": "",

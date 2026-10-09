@@ -41,7 +41,7 @@ def walk(suite):
 
 walk({"suites": res["suites"]})
 
-KINDS = ["smoke", "perf", "a11y", "security", "visual", "api", "regression"]
+KINDS = ["rag", "smoke", "perf", "a11y", "security", "visual", "api", "regression"]
 by_title = {}
 runs = 0
 counts = {"passed": 0, "expected": 0, "flaky": 0, "failed": 0}
@@ -157,6 +157,22 @@ BUGS = [
          steps=["Create a booking, then DELETE /booking/{id} with a valid token."],
          exp="204 No Content (or 200 OK).", act="201 Created, a status that means “something was created”. The delete itself works (a later GET gives 404, see TC-API-17).",
          test="BUG-API-03 (tests/api/booker.api.spec.ts)", ev=[]),
+    dict(id="BUG-RAG-01", type="rag", sev="Low", where="RAG demo (my own project) · Every page load", title="A script request fails with 404 on every page load",
+         steps=["Open https://lukas-rag.vercel.app with the developer tools open, tab Network."],
+         exp="No failed request and no console error.", act="GET /_vercel/insights/script.js answers 404 and the console shows an error on every load. The page includes the Vercel Analytics tag, but the feature is not switched on for the project.",
+         test="BUG-RAG-01 (tests/rag/rag.ui.spec.ts)", ev=[]),
+    dict(id="BUG-RAG-02", type="rag", sev="Medium", where="RAG demo · Accessibility", title="Low contrast, and icon-only controls without a name on a phone",
+         steps=["Open the page and run an axe-core scan (WCAG 2.0/2.1 A and AA) at 1280×800 and at Pixel 7 size."],
+         exp="No violations.", act="Desktop: color-contrast (serious) on 15 elements, grey #4e6460 on #040a0b has a ratio of 3.14 (minimum 4.5). Phone: color-contrast x1, button-name (critical) x2 and link-name (serious) x6: buttons and links that show only an icon have their text hidden, so a screen reader announces nothing.",
+         note="Desktop and phone layouts have different findings, so a scan at one size is not enough.", test="BUG-RAG-02 (tests/rag/rag.ui.spec.ts)", ev=[]),
+    dict(id="BUG-RAG-03", type="rag", sev="Low", where="RAG demo · Response headers", title="No Content-Security-Policy, X-Content-Type-Options or frame protection",
+         steps=["Request / and read the response headers."],
+         exp="Content-Security-Policy, X-Content-Type-Options: nosniff and X-Frame-Options (or frame-ancestors) are set.", act="Only Strict-Transport-Security is set. The page can be framed by another site, and nothing limits where scripts may load from.",
+         note="The page shows no private data, so the impact is small. It matters because the page has a form that calls a paid API.", test="BUG-RAG-03 (tests/rag/rag.ui.spec.ts)", ev=[]),
+    dict(id="BUG-RAG-04", type="rag", sev="Low", where="RAG demo · Third-party scripts", title="Two third-party scripts load without a Subresource Integrity hash",
+         steps=["Read the script tags of /."],
+         exp="Every script from another domain has an integrity attribute.", act="unpkg.com (Phosphor icons) and cdnjs.cloudflare.com (d3) are loaded without one. If a CDN served a changed file, the page would run it.",
+         test="BUG-RAG-04 (tests/rag/rag.ui.spec.ts)", ev=[]),
 ]
 for b in BUGS:
     b.setdefault("note", "")
@@ -176,7 +192,7 @@ for tok, data in [("{{TESTS_JSON}}", tests), ("{{BUGS_JSON}}", BUGS), ("{{PERF_J
 
 # ---------- zip of the project ----------
 with zipfile.ZipFile(SITE / "qa-portfolio.zip", "w", zipfile.ZIP_DEFLATED) as z:
-    for rel in ["README.md", "package.json", "package-lock.json", "playwright.config.ts", ".gitignore", "build_site.py", "site_template.html"]:
+    for rel in ["README.md", "package.json", "package-lock.json", "playwright.config.ts", "tsconfig.json", ".gitignore", "build_site.py", "site_template.html"]:
         z.write(ROOT / rel, rel)
     for folder in ["tests", "docs", ".github", "evidence"]:
         for f in (ROOT / folder).rglob("*"):

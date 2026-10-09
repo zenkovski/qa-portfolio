@@ -1,9 +1,10 @@
-# QA Lab — automated tests for a web shop and a public API
+# QA Lab — automated tests for a web shop, a public API and an AI assistant
 
-Automated tests, scenarios and bug reports for two practice targets:
+Automated tests, scenarios and bug reports for three targets:
 
 - **Sauce Demo** (https://www.saucedemo.com), a web shop made for practising test automation
 - **Restful-Booker** (https://restful-booker.herokuapp.com), a booking API made for practising API testing
+- **The RAG demo** (https://lukas-rag.vercel.app), a labour-law assistant that is **my own project**, tested from outside as a black box. The tests never call the model and never use the question form (see [ADR-002](docs/decisions/ADR-002-bez-modelu-v-testech-rag.md))
 
 Everything is built with Playwright and TypeScript. I built it with Claude Code to show how I work with AI:
 the AI writes and explores, I decide what is a bug and check every result.
@@ -22,12 +23,13 @@ I am a beginner in testing. This is a practice project, not commercial experienc
 | Security (basic) | 7 | Forged session cookie, cookie flags, script in inputs, https, pages without login |
 | Visual | 2 | Pixel comparison inside one run (no stored baseline images) |
 | Performance | 7 | Login time, median of 5 runs per account |
+| AI system (RAG demo) | 37 | Data consistency (every citation points to a delivered source), API contract and rejected requests, UI flows on desktop and phone, accessibility, speed, headers. Includes 4 known-bug tests |
 | Known bugs as tests | 19 | A bug written as a test, so the suite stays green and speaks up when it is fixed |
 
-80 test cases, about 240 runs across **Chromium, Firefox, WebKit (Safari engine), a Pixel 7 phone emulation and the API**, in under 2 minutes.
+117 test cases, 315 runs across **Chromium, Firefox, WebKit (Safari engine), a Pixel 7 phone emulation and the API**, in under 3 minutes.
 
-**18 bugs found**, each with steps, expected and actual result, evidence and a test: [reports/BUG-REPORTS.md](reports/BUG-REPORTS.md).
-Highlights: a session that is only a typed cookie (BUG-011), checkout accepts blank names (BUG-014), a moved cart icon found by pixel comparison (BUG-015), an API that answers 200 to a wrong password (BUG-API-01).
+**22 bugs found** (18 on the practice targets, 4 on my own RAG demo), each with steps, expected and actual result, evidence and a test: [reports/BUG-REPORTS.md](reports/BUG-REPORTS.md).
+Highlights: a session that is only a typed cookie (BUG-011), checkout accepts blank names (BUG-014), a moved cart icon found by pixel comparison (BUG-015), an API that answers 200 to a wrong password (BUG-API-01), and on my own RAG demo a script that fails with 404 on every page load (BUG-RAG-01) and icon-only buttons without a name on a phone (BUG-RAG-02).
 
 ## How to run
 
@@ -39,7 +41,7 @@ npx playwright test           # everything
 npm run report                # opens the HTML report
 ```
 
-Other scripts: `npm run test:api`, `npm run test:a11y`, `npm run test:security`.
+Other scripts: `npm run test:api`, `npm run test:a11y`, `npm run test:security`, `npm run test:rag`, `npm run typecheck`.
 Tags (`@smoke`, `@regression`, `@api`, `@a11y`, `@security`, `@visual`, `@perf`, `@bug`) can be combined with `--grep`.
 
 To rebuild the web page after a run: `python build_site.py` (needs Python and Pillow). It reads `reports/results.json` and `reports/perf.json`.
@@ -53,7 +55,7 @@ To rebuild the web page after a run: `python build_site.py` (needs Python and Pi
 - **Bug tests** use `test.fail()`. They pass while the bug exists, and report "unexpected pass" after the fix.
 - **Visual tests without baseline images:** a stored screenshot from one OS never matches another, so two screenshots from the same run are compared.
 - **API tests clean up:** whatever a test creates, it deletes. Names start with `QA-Lukas`.
-- **CI:** `.github/workflows/tests.yml` runs smoke on every push, then the full suite, and every Monday (the public targets can change without any commit here). The report is saved as an artifact.
+- **CI:** `.github/workflows/tests.yml` runs a type check, then smoke on every push, then the full suite, and every Monday (the public targets can change without any commit here). The report is saved as an artifact.
 
 ## Documents
 
@@ -62,7 +64,11 @@ To rebuild the web page after a run: `python build_site.py` (needs Python and Pi
 | [docs/TEST-STRATEGY.md](docs/TEST-STRATEGY.md) | Scope, risk-based priorities, test types and why, flaky policy, what I would do next |
 | [docs/TEST-SCENARIOS.md](docs/TEST-SCENARIOS.md) | Scenarios with priority and an honest list of what is not covered |
 | [docs/PRODUCT-CONTEXT.md](docs/PRODUCT-CONTEXT.md) | Description of the product written for AI tools, so they do not have to guess |
-| [reports/BUG-REPORTS.md](reports/BUG-REPORTS.md) | BUG-001 to BUG-015 and BUG-API-01 to 03 |
+| [reports/BUG-REPORTS.md](reports/BUG-REPORTS.md) | BUG-001 to BUG-015, BUG-API-01 to 03 and BUG-RAG-01 to 04 |
+| [docs/limitations.md](docs/limitations.md) | What is not tested, and the weak spots of the suite itself |
+| [docs/decisions/](docs/decisions/) | ADR-001 to 003: bugs as tests, no model calls in the RAG tests, type check instead of ESLint |
+| [docs/incidents/](docs/incidents/) | Two failures that were my own test's fault, with symptom, investigation and fix |
+| [docs/ai-assisted-development.md](docs/ai-assisted-development.md) | Who did what, where the AI was wrong, and what was not reviewed by a human |
 
 ## Reliability
 
@@ -82,7 +88,7 @@ What stays with a human: deciding what counts as a bug and how severe it is, and
 
 ## Related project
 
-[**rag-demo**](https://github.com/zenkovski/rag-demo) applies the same habits to an AI system: a Czech labour-law assistant with a measurement lab
+[**rag-demo**](https://github.com/zenkovski/rag-demo) (the system tested in `tests/rag/`) applies the same habits to an AI system: a Czech labour-law assistant with a measurement lab
 (Recall@k, MRR, confidence intervals, dev / validation / test splits), a failure gallery, a threat model and a CI quality gate that fails with a list of questions.
 
 ## Limits
@@ -90,3 +96,5 @@ What stays with a human: deciding what counts as a bug and how severe it is, and
 - The targets are practice apps, so many bugs are placed there on purpose. The value is the method, not the discovery.
 - Not covered: real mobile devices and native apps (I would use Maestro or Appium), load testing, manual screen-reader testing.
 - Security checks are only those a tester can do from the browser. This is not a penetration test.
+- The RAG demo is my own project, so I knew where to look. Whether its answers are legally correct is measured in rag-demo, not here.
+- The material of 9. 10. 2026 (RAG tests, ADRs, incident notes) was not read line by line by me before publishing: see [docs/ai-assisted-development.md](docs/ai-assisted-development.md). Full list: [docs/limitations.md](docs/limitations.md).

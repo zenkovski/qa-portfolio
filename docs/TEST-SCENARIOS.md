@@ -106,9 +106,23 @@ See `reports/BUG-REPORTS.md` (BUG-001 to BUG-015, BUG-API-01 to 03). They are au
 | TC-API-20..22 | Wrong password gives no token; unknown id 404; delete without token 403 | as listed | P1 | yes |
 | BUG-API-01..03 | Status codes for bad credentials, bad input, delete | 401, 400, 204 | P2 | yes (bugs) |
 
+## RAG: AI assistant (my own demo, black box)
+
+| ID | Scenario | Expected | Priority | Automated |
+|---|---|---|---|---|
+| TC-RAG-01..03 | `data.json` is served, 4 laws, chunk counts match, ids unique, no empty chunk | as listed | P1 | yes |
+| TC-RAG-04..08 | Every question has 5 sources, they exist, every citation points to a delivered source, every answer has a citation or is a refusal, no malformed citation | as listed | P1 | yes |
+| TC-RAG-09..10 | Published self-evaluation is consistent with the sources; share of correct answers above 80 % | as listed | P2 | yes |
+| TC-RAG-20..29 | `/api/ask`: GET 405, no client header 403, foreign origin 403, short and long question 400, 300 characters pass the length check, honeypot 400, invalid proof of work 400, malformed JSON < 500, no internals in errors | as listed | P1 | yes |
+| TC-RAG-30 | `/api/hit` refuses a foreign origin | 403 | P1 | yes |
+| TC-RAG-40..49 | Page loads, preset gives answer with citations, citation opens the source, category and text filter, 2475 map points, disclaimer visible, phone: no sideways scroll and a question via categories, click counter request (stubbed) | as listed | P1/P2 | yes |
+| TC-RAG-52..53 | Largest paint under 4 s, HSTS | as listed | P2 | yes |
+| BUG-RAG-01..04 | No failed request, no WCAG A/AA violation, security headers, SRI on third-party scripts | as listed | P2/P3 | yes (bugs) |
+
 ## Not covered yet (honest list)
 
 - Real mobile devices (iOS, Android). For native apps I would use Maestro or Appium.
 - Load and stress testing (a public site I do not own).
 - Manual screen-reader testing (NVDA, VoiceOver). Automated tools cannot find every accessibility problem; the rest needs a person.
 - Test data management and a staging environment (the practice app has neither).
+- RAG: valid questions, rate limit, prompt injection and answer quality. They need the paid model, so they are not part of this suite (see [limitations.md](limitations.md)).

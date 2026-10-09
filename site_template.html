@@ -263,8 +263,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
     <div class="badge"><b>QA</b><span class="cs">Ukázkový projekt · Playwright · TypeScript</span><span class="en">Sample project · Playwright · TypeScript</span></div>
     <h1><span class="cs">Testy, které najdou chybu <span>dřív než zákazník.</span></span><span class="en">Tests that find the bug <span>before the customer does.</span></span></h1>
     <p class="lead">
-      <span class="cs">Automatické testy webového obchodu a veřejného API: ovládání stránky, API, přístupnost, bezpečnost, vizuální kontrola a rychlost. Běží ve čtyřech prohlížečích jedním příkazem. Každá nalezená chyba má kroky, očekávaný a skutečný výsledek a důkaz.</span>
-      <span class="en">Automated tests for a web shop and a public API: UI, API, accessibility, security, visual checks and speed. They run in four browsers with one command. Every bug found has steps, expected and actual result, and evidence.</span>
+      <span class="cs">Automatické testy webového obchodu, veřejného API a živého AI asistenta (RAG): ovládání stránky, API, přístupnost, bezpečnost, vizuální kontrola, rychlost a kontrola dat. Běží ve čtyřech prohlížečích jedním příkazem. Každá nalezená chyba má kroky, očekávaný a skutečný výsledek a důkaz.</span>
+      <span class="en">Automated tests for a web shop, a public API and a live AI assistant (RAG): UI, API, accessibility, security, visual checks, speed and data checks. They run in four browsers with one command. Every bug found has steps, expected and actual result, and evidence.</span>
     </p>
     <div class="btns">
       <a class="btn primary" href="report/" target="_blank"><i class="ph ph-chart-bar"></i><span class="cs">Živý report testů</span><span class="en">Live test report</span></a>
@@ -273,8 +273,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
     </div>
     <div class="stats" id="stats"></div>
     <p class="honest">
-      <span class="cs"><b>Upřímně:</b> je to cvičný projekt, ne komerční zkušenost. Jsem v testování začátečník. Pracuju s AI (Claude Code): ta píše kód a zkoumá, já rozhoduju, co je chyba, a každý výsledek kontroluju. Testuje se veřejná cvičná aplikace <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a> a cvičné API <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a>, takže se nic skutečného nedotýká. Autor: Lukáš Procházka.</span>
-      <span class="en"><b>Honest context:</b> this is a practice project, not commercial experience. I am a beginner in testing. I work with AI (Claude Code): it writes code and explores, I decide what counts as a bug and check every result. The targets are a public practice shop, <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a>, and a practice API, <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a>, so nothing real is touched. Author: Lukáš Procházka.</span>
+      <span class="cs"><b>Upřímně:</b> je to cvičný projekt, ne komerční zkušenost. Jsem v testování začátečník. Pracuju s AI (Claude Code): ta píše kód a zkoumá, já rozhoduju, co je chyba, a každý výsledek kontroluju. Testuje se veřejná cvičná aplikace <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a> cvičné API <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a> a můj vlastní <a href="https://lukas-rag.vercel.app" target="_blank" rel="noopener">RAG asistent</a> (testy nikdy nevolají model a nic na něm neměním), takže se nic skutečného nedotýká. Autor: Lukáš Procházka.</span>
+      <span class="en"><b>Honest context:</b> this is a practice project, not commercial experience. I am a beginner in testing. I work with AI (Claude Code): it writes code and explores, I decide what counts as a bug and check every result. The targets are a public practice shop, <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a>, a practice API, <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a>, and my own <a href="https://lukas-rag.vercel.app" target="_blank" rel="noopener">RAG assistant</a> (the tests never call the model and I change nothing on it), so nothing real is touched. Author: Lukáš Procházka.</span>
     </p>
   </div>
 </header>
@@ -332,6 +332,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
         <tr><td><span class="cs">Ceny</span><span class="en">Prices</span></td><td><span class="p p1">P1</span></td><td><span class="cs">Špatná cena = ztráta důvěry (BUG-008).</span><span class="en">A wrong price = lost trust (BUG-008).</span></td></tr>
         <tr><td><span class="cs">Řazení a obrázky</span><span class="en">Sorting and images</span></td><td><span class="p p2">P2</span></td><td><span class="cs">Vidět, otravné, nic se neztratí.</span><span class="en">Visible and annoying, nothing is lost.</span></td></tr>
         <tr><td><span class="cs">Přístupnost, rychlost</span><span class="en">Accessibility, speed</span></td><td><span class="p p2">P2</span></td><td><span class="cs">Levně se kontrolují automaticky.</span><span class="en">Cheap to check automatically.</span></td></tr>
+        <tr><td><span class="cs">AI asistent: citace a data</span><span class="en">AI assistant: citations and data</span></td><td><span class="p p1">P1</span></td><td><span class="cs">Slib „každá věta má zdroj“ se dá ověřit z dat. Obrana placeného API proti zneužití (BUG-RAG-03).</span><span class="en">The promise "every sentence has a source" can be checked from the data. Defence of a paid API from abuse (BUG-RAG-03).</span></td></tr>
         <tr><td><span class="cs">Vzhled</span><span class="en">Layout</span></td><td><span class="p p3">P3</span></td><td><span class="cs">Potřebuje kontrolu pixelů, locator to nevidí.</span><span class="en">Needs a pixel check; a locator cannot see it.</span></td></tr>
       </tbody></table>
     </div>
@@ -364,6 +365,10 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
     <span class="cs"><b>Příběh o chybě v mém vlastním testu.</b> Po přidání prohlížeče WebKit (Safari) selhával jeden test ze čtyř pokusů z deseti. Chyba nebyla v obchodě, ale v mém testu: četl seznam produktů dřív, než se na stránce vykreslil. Řešení: počkat, až je stránka opravdu nakreslená. Potom 15 z 15 pokusů prošlo. Proto testuju ve více prohlížečích, ukázalo to slabé místo, které by v jednom nebylo vidět.</span>
     <span class="en"><b>A story about a bug in my own test.</b> After adding the WebKit (Safari) browser, one test failed in 4 of 10 attempts. The fault was not in the shop but in my test: it read the product list before the page had drawn it. The fix: wait until the page is really drawn. After that, 15 of 15 attempts passed. This is why I test in several browsers: it showed a weak spot one browser would hide.</span>
   </div>
+  <div class="story">
+    <span class="cs"><b>Druhý příběh: AI se spletla i tady.</b> První test dat RAG asistenta označil přes 400 zdrojů za neexistující. Chyba nebyla v datech: AI brala číslo v poli <code>hits</code> za ID úseku, ale je to pozice v seznamu. Další test čekal na tlačítka, která jsou na telefonu schovaná, a všechny telefonní testy vypršely. Takové omyly jsou zapsané v <a href="https://github.com/zenkovski/qa-portfolio/blob/main/docs/ai-assisted-development.md" target="_blank" rel="noopener">docs/ai-assisted-development.md</a>, spolu s tím, co z projektu <b>nebylo</b> zkontrolováno řádek po řádku.</span>
+    <span class="en"><b>A second story: the AI was wrong here too.</b> The first data test of the RAG assistant reported over 400 sources as missing. The data was fine: the AI took the number in <code>hits</code> for the chunk ID, but it is the position in the list. Another test waited for buttons that are hidden on a phone, so every phone test timed out. These mistakes are written down in <a href="https://github.com/zenkovski/qa-portfolio/blob/main/docs/ai-assisted-development.md" target="_blank" rel="noopener">docs/ai-assisted-development.md</a>, together with what was <b>not</b> reviewed line by line.</span>
+  </div>
 </section>
 
 <section class="sec" id="spustit">
@@ -383,8 +388,10 @@ npm run report</pre>
   <div class="files">
     <div><code>docs/TEST-STRATEGY.md</code> · <span class="cs">strategie a rizika</span><span class="en">strategy and risks</span></div>
     <div><code>docs/TEST-SCENARIOS.md</code> · <span class="cs">scénáře s prioritou</span><span class="en">scenarios with priority</span></div>
-    <div><code>reports/BUG-REPORTS.md</code> · <span class="cs">všech 18 chyb</span><span class="en">all 18 bugs</span></div>
-    <div><code>tests/</code> · <span class="cs">UI, API, a11y, bezpečnost, vizuální, rychlost</span><span class="en">UI, API, a11y, security, visual, speed</span></div>
+    <div><code>reports/BUG-REPORTS.md</code> · <span class="cs">všech 22 chyb</span><span class="en">all 22 bugs</span></div>
+    <div><code>tests/rag/</code> · <span class="cs">testy živého AI asistenta (bez volání modelu)</span><span class="en">tests of the live AI assistant (no model calls)</span></div>
+    <div><code>docs/decisions/</code>, <code>docs/incidents/</code>, <code>docs/limitations.md</code> · <span class="cs">rozhodnutí, incidenty, limity</span><span class="en">decisions, incidents, limits</span></div>
+    <div><code>tests/</code> · <span class="cs">UI, API, a11y, bezpečnost, vizuální, rychlost, AI systém</span><span class="en">UI, API, a11y, security, visual, speed, AI system</span></div>
     <div><code>tests/pages/</code> · <span class="cs">Page Objects (selektory na jednom místě)</span><span class="en">Page Objects (selectors in one place)</span></div>
     <div><code>.github/workflows/</code> · <span class="cs">spuštění na GitHubu: smoke při každém pushi, celé každé pondělí</span><span class="en">GitHub run: smoke on every push, full every Monday</span></div>
   </div>
@@ -441,6 +448,7 @@ const KINDS = [
   ['visual',   'ph-eye',            L('Vizuální kontrola','Visual check'),   L('Porovnání pixelů uvnitř jednoho běhu, bez uložených obrázků. Funguje na každém počítači.','Pixel comparison inside one run, with no stored images. Works on any computer.')],
   ['perf',     'ph-timer',          L('Rychlost','Speed'),                   L('Čas přihlášení, medián z pěti běhů pro každý účet. Výsledek jde do grafu níž.','Login time, median of five runs per account. The result feeds the chart below.')],
   ['bug',      'ph-bug',            L('Známé chyby jako testy','Known bugs as tests'), L('Chyba zapsaná jako test. Dokud existuje, sada je zelená. Po opravě test sám upozorní.','A bug written as a test. While it exists the suite stays green. After the fix the test raises the alarm.')],
+  ['rag',      'ph-robot',          L('AI systém (RAG)','AI system (RAG)'), L('Živý asistent nad zákony: konzistence dat (citace míří na doručené zdroje), kontrakt API, obrany bez volání modelu, přístupnost, rychlost, hlavičky.','A live assistant over laws: data consistency (citations point to delivered sources), API contract, defences without calling the model, accessibility, speed, headers.')],
   ['x',        'ph-browsers',       L('Více prohlížečů','Cross-browser'),    L('Chrome, Firefox, WebKit (Safari) a emulace telefonu Pixel 7. Našlo i chybu v mém vlastním testu.','Chrome, Firefox, WebKit (Safari) and a Pixel 7 phone emulation. It even found a bug in my own test.')],
 ];
 function renderCards(){
@@ -452,7 +460,7 @@ function renderCards(){
 }
 
 /* průzkumník testů */
-const FILTERS = [['all',L('Vše','All')],['smoke','Smoke'],['regression','Regression'],['api','API'],['a11y','A11y'],['security',L('Bezpečnost','Security')],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['bug',L('Jen známé chyby','Known bugs only')]];
+const FILTERS = [['all',L('Vše','All')],['smoke','Smoke'],['regression','Regression'],['api','API'],['a11y','A11y'],['security',L('Bezpečnost','Security')],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['rag',L('AI systém','AI system')],['bug',L('Jen známé chyby','Known bugs only')]];
 let flt = 'all', term = '', showAll = false;
 const COLS = ['desktop-chrome','mobile-pixel','desktop-firefox','desktop-webkit','api'];
 function filtered(){
@@ -479,7 +487,7 @@ function renderTable(){
 }
 
 /* chyby */
-const BF = [['all',L('Vše','All')],['ui','UI'],['security',L('Bezpečnost','Security')],['a11y','A11y'],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['api','API']];
+const BF = [['all',L('Vše','All')],['ui','UI'],['security',L('Bezpečnost','Security')],['a11y','A11y'],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['api','API'],['rag',L('AI systém','AI system')]];
 let bflt = 'all';
 function renderBugs(){
   const tools = document.getElementById('bugTools');

@@ -100,8 +100,19 @@ A flaky test fails sometimes without a change in the product. Here the only cand
 - Is a 300-character name acceptable, or should there be a limit?
 - Are the same prices expected for every user account? (`visual_user` shows different ones, which I treat as a bug.)
 
-## 10. Honest limits
+## 10. Third target: an AI system (RAG demo)
+
+The RAG demo answers questions with a language model and promises that every sentence has a source. From outside, QA can test three things without judging the law:
+
+1. **Does the promise hold in the data?** `/data.json` is checked: every citation `[n]` points to a delivered source, every source exists, counts match, every answer has a citation or is a refusal (`TC-RAG-01` to `10`).
+2. **Does the API refuse what it must refuse?** Wrong method, missing header, foreign origin, bad length, honeypot, invalid proof of work, malformed JSON (`TC-RAG-20` to `30`).
+3. **Does the page work for a visitor?** Presets, citation click, filters, map, disclaimer, phone layout, speed, accessibility, headers (`TC-RAG-40` to `55`, `BUG-RAG-01` to `04`).
+
+Rule that shapes all of it: **no test may call the model** ([ADR-002](decisions/ADR-002-bez-modelu-v-testech-rag.md)). Whether an answer is *right* is a different question, measured with a labelled question set in the rag-demo project.
+
+## 11. Honest limits
 
 - The target is a practice app, so many "bugs" are placed there on purpose. The value here is the **method**, not the discovery.
 - I am a beginner in testing. I use AI to write and explore, and I check every result myself (see README, "How I used AI").
+- The RAG demo is my own project. Full list of what is not tested: [limitations.md](limitations.md).
 - A suite of this size is small. It shows the structure, not the effort of a real product.

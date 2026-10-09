@@ -238,6 +238,53 @@ A public practice API for testers. Tests are in `tests/api/booker.api.spec.ts`. 
 
 ---
 
+## BUG-RAG-01 — A script request fails with 404 on every page load
+
+**Severity:** Low · **Target:** RAG demo (https://lukas-rag.vercel.app), my own project
+
+**Steps:** open the page with the developer tools open, tab Network.
+**Expected:** no failed request, no console error.
+**Actual:** `GET /_vercel/insights/script.js` answers `404`, and the console shows an error on every load. The page includes the Vercel Analytics script tag, but the feature is not enabled for the project, so nothing is measured and every visitor gets an error.
+**Test:** `BUG-RAG-01` (tests/rag/rag.ui.spec.ts)
+
+---
+
+## BUG-RAG-02 — WCAG A/AA violations: low contrast, and icon-only controls without a name on a phone
+
+**Severity:** Medium · **Target:** RAG demo
+
+**Steps:** open the page and run an axe-core scan (WCAG 2.0/2.1 A and AA).
+**Expected:** no violations.
+**Actual (desktop, 1280×800):** `color-contrast` (serious) on 15 elements. Grey text `#4e6460` on `#040a0b` has a ratio of 3.14, the minimum is 4.5. For example the law label (“ZP”) and the question count on the category buttons.
+**Actual (Pixel 7):** `color-contrast` x1, `button-name` (critical) x2 and `link-name` (serious) x6. The buttons and links that show only an icon (the “Zeptat se” submit button, the GitHub link, the bottom navigation) have their text hidden on a phone, so a screen reader announces nothing.
+**Note:** the desktop and the phone layout have different findings, so a scan on one size is not enough.
+**Test:** `BUG-RAG-02` (tests/rag/rag.ui.spec.ts, Chromium and phone)
+
+---
+
+## BUG-RAG-03 — No Content-Security-Policy, X-Content-Type-Options or frame protection
+
+**Severity:** Low · **Target:** RAG demo
+
+**Steps:** request `/` and read the response headers.
+**Expected:** `Content-Security-Policy`, `X-Content-Type-Options: nosniff` and `X-Frame-Options` (or `frame-ancestors`).
+**Actual:** only `Strict-Transport-Security` is set. The page can be put in a frame on another site (clickjacking), and nothing limits where scripts may load from.
+**Note:** the page shows no private data, so the impact is small. It is listed because the page has a form that calls a paid API.
+**Test:** `BUG-RAG-03` (tests/rag/rag.ui.spec.ts)
+
+---
+
+## BUG-RAG-04 — Two third-party scripts load without a Subresource Integrity hash
+
+**Severity:** Low · **Target:** RAG demo
+
+**Steps:** read the `<script>` tags of `/`.
+**Expected:** every script from another domain has an `integrity` attribute.
+**Actual:** `https://unpkg.com/@phosphor-icons/web@2.1.1` and `https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js` have none. If one of these CDNs served a changed file, the page would run it.
+**Test:** `BUG-RAG-04` (tests/rag/rag.ui.spec.ts)
+
+---
+
 ## How these tests stay useful
 
 Each bug test is marked `test.fail()`. The suite stays green while the bug exists. When a developer fixes a bug, its test starts to "unexpectedly pass" and the run reports it, so the test can be moved into the normal regression suite.
