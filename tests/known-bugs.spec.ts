@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { loginOk, addAll, prices, names, PRODUCTS } from './helpers';
 import * as fs from 'fs';
 
-// Testy, které popisují SPRÁVNÉ chování, ale u účtů „problem_user“, „error_user“, „visual_user“
-// a „performance_glitch_user“ aplikace chybuje. Každý je označen test.fail(): suite je zelená,
-// dokud chyba existuje. Až ji někdo opraví, test začne „neočekávaně procházet“ a upozorní na to.
-// Popis každé chyby je v reports/BUG-REPORTS.md.
+// Tests that describe the CORRECT behaviour, but accounts problem_user, error_user, visual_user
+// and performance_glitch_user get it wrong. Each is marked test.fail(): the suite stays green
+// while the bug exists. When someone fixes it, the test starts to pass unexpectedly and says so.
+// Every bug is described in reports/BUG-REPORTS.md.
 
 const shot = async (page: any, name: string) => {
   fs.mkdirSync('evidence', { recursive: true });
@@ -15,14 +15,14 @@ const shot = async (page: any, name: string) => {
 test.describe('problem_user', () => {
   test.beforeEach(async ({ page }) => loginOk(page, 'problem_user'));
 
-  test('BUG-001 produkty mají vlastní obrázky', async ({ page }, info) => {
+  test('BUG-001 each product has its own image', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-001');
     const srcs = await page.locator('.inventory_item_img img').evaluateAll((els) => els.map((e) => e.getAttribute('src')));
     await shot(page, `BUG-001-${info.project.name}`);
     expect(new Set(srcs).size).toBe(6);
   });
 
-  test('BUG-002 řazení Z–A změní pořadí', async ({ page }, info) => {
+  test('BUG-002 sorting Z-A changes the order', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-002');
     const before = await names(page);
     await page.locator('[data-test="product-sort-container"]').selectOption('za');
@@ -30,14 +30,14 @@ test.describe('problem_user', () => {
     expect(await names(page)).toEqual([...before].sort().reverse());
   });
 
-  test('BUG-003 všech 6 produktů jde přidat do košíku', async ({ page }, info) => {
+  test('BUG-003 all 6 products can be added to the cart', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-003');
     for (const id of PRODUCTS) await page.locator(`[data-test="add-to-cart-${id}"]`).click();
     await shot(page, `BUG-003-${info.project.name}`);
     await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('6', { timeout: 2000 });
   });
 
-  test('BUG-004 pole Příjmení v pokladně přijme příjmení', async ({ page }, info) => {
+  test('BUG-004 the Last Name field accepts a last name', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-004');
     await page.locator(`[data-test="add-to-cart-${PRODUCTS[0]}"]`).click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -53,7 +53,7 @@ test.describe('problem_user', () => {
 test.describe('error_user', () => {
   test.beforeEach(async ({ page }) => loginOk(page, 'error_user'));
 
-  test('BUG-005 řazení nehlásí chybu', async ({ page }, info) => {
+  test('BUG-005 sorting does not raise an error', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-005');
     let alert = '';
     page.on('dialog', async (d) => { alert = d.message(); await d.dismiss(); });
@@ -63,14 +63,14 @@ test.describe('error_user', () => {
     expect(alert).toBe('');
   });
 
-  test('BUG-006 všech 6 produktů jde přidat do košíku', async ({ page }, info) => {
+  test('BUG-006 all 6 products can be added to the cart', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-006');
     for (const id of PRODUCTS) await page.locator(`[data-test="add-to-cart-${id}"]`).click();
     await shot(page, `BUG-006-${info.project.name}`);
     await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('6', { timeout: 2000 });
   });
 
-  test('BUG-007 příjmení se uloží a pokladna ho nenechá prázdné', async ({ page }, info) => {
+  test('BUG-007 the last name is kept and checkout does not allow it empty', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-007');
     await page.locator(`[data-test="add-to-cart-${PRODUCTS[0]}"]`).click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -88,14 +88,14 @@ test.describe('error_user', () => {
 test.describe('visual_user', () => {
   test.beforeEach(async ({ page }) => loginOk(page, 'visual_user'));
 
-  test('BUG-008 ceny odpovídají ceníku', async ({ page }, info) => {
+  test('BUG-008 prices match the price list', { tag: '@bug' }, async ({ page }, info) => {
     test.fail(true, 'BUG-008');
     const expected = [29.99, 9.99, 15.99, 49.99, 7.99, 15.99];
     await shot(page, `BUG-008-${info.project.name}`);
     expect(await prices(page)).toEqual(expected);
   });
 
-  test('BUG-009 první produkt má vlastní obrázek', async ({ page }) => {
+  test('BUG-009 the first product has its own image', { tag: '@bug' }, async ({ page }) => {
     test.fail(true, 'BUG-009');
     const src = await page.locator('.inventory_item_img img').first().getAttribute('src');
     expect(src).not.toContain('sl-404');
@@ -103,7 +103,7 @@ test.describe('visual_user', () => {
 });
 
 test.describe('performance_glitch_user', () => {
-  test('BUG-010 přihlášení trvá do 2 sekund', async ({ page }) => {
+  test('BUG-010 login takes under 2 seconds', { tag: '@bug' }, async ({ page }) => {
     test.fail(true, 'BUG-010');
     const t0 = Date.now();
     await page.goto('/');
@@ -112,7 +112,7 @@ test.describe('performance_glitch_user', () => {
     await page.locator('[data-test="login-button"]').click();
     await page.waitForURL(/inventory/, { timeout: 15_000 });
     const ms = Date.now() - t0;
-    console.log(`performance_glitch_user: přihlášení trvalo ${ms} ms`);
+    console.log(`performance_glitch_user: login took ${ms} ms`);
     expect(ms).toBeLessThan(2000);
   });
 });

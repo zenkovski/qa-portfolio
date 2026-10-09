@@ -1,16 +1,26 @@
 {
   "name": "qa-portfolio-saucedemo",
   "version": "1.0.0",
-  "description": "AI-assisted test suite and bug reports for Sauce Demo (practice web shop)",
+  "description": "Test suite for Sauce Demo (UI, API, accessibility, visual, security, performance), built with AI assistance",
   "scripts": {
     "test": "playwright test",
-    "report": "playwright show-report reports/html"
+    "report": "playwright show-report reports/html",
+    "test:smoke": "playwright test --grep @smoke --project=desktop-chrome",
+    "test:api": "playwright test --project=api",
+    "test:a11y": "playwright test --grep @a11y --project=desktop-chrome",
+    "test:security": "playwright test --grep @security --project=desktop-chrome",
+    "test:chrome": "playwright test --project=desktop-chrome --project=mobile-pixel --project=api"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.4",
+    "@types/pngjs": "^6.0.5",
+    "pixelmatch": "^8.0.0",
+    "pngjs": "^7.0.0",
     "typescript": "^7.0.2"
   }
 }

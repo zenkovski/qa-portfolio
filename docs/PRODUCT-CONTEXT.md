@@ -51,8 +51,8 @@ The app uses `data-test` attributes. Prefer them: `username`, `password`, `login
 
 - Several accounts are broken on purpose, so a failing test is not always a test problem.
 - Test data does not persist on the server. State lives in the browser.
-- Real products of a customer (video relay platform with web, admin, iOS and Android) have the same
-  kinds of risks: flows that cross pages, forms with required fields, different behaviour per user.
+- A real product has the same kinds of risks: flows that cross pages, forms with required fields,
+  different behaviour per user, and an API behind the web page.
 
 ## How to ask an AI for help here
 

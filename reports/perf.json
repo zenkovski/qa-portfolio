@@ -1,0 +1,61 @@
+{
+  "measuredAt": "2026-10-09T16:39:19.533Z",
+  "runsPerUser": 5,
+  "users": {
+    "standard_user": {
+      "median": 160,
+      "max": 185,
+      "runs": [
+        123,
+        122,
+        178,
+        185,
+        160
+      ]
+    },
+    "problem_user": {
+      "median": 154,
+      "max": 163,
+      "runs": [
+        158,
+        163,
+        134,
+        131,
+        154
+      ]
+    },
+    "error_user": {
+      "median": 167,
+      "max": 180,
+      "runs": [
+        143,
+        141,
+        180,
+        167,
+        175
+      ]
+    },
+    "visual_user": {
+      "median": 149,
+      "max": 188,
+      "runs": [
+        149,
+        188,
+        110,
+        150,
+        147
+      ]
+    },
+    "performance_glitch_user": {
+      "median": 5169,
+      "max": 5199,
+      "runs": [
+        5140,
+        5162,
+        5196,
+        5199,
+        5169
+      ]
+    }
+  }
+}

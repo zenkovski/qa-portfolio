@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Lab · testování webu a API</title>
+<meta name="description" content="Ukázkový QA projekt: automatické testy (UI, API, přístupnost, bezpečnost, vizuální kontrola, rychlost) ve čtyřech prohlížečích, 18 nahlášených chyb s důkazy. Playwright, TypeScript, postaveno s AI.">
+<meta name="theme-color" content="#040a0b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="QA Lab · testy, které najdou chybu dřív než zákazník">
+<meta property="og:description" content="Playwright testy webu a API, přístupnost, bezpečnost, vizuální kontrola. 18 nahlášených chyb s kroky a důkazy. Cvičný projekt postavený s AI.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23CDFF9B'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' fill='none' stroke='%23142a05' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+:root{
+  /* paleta „Bright Leaf + Emerald Green“, stejná jako u RAG ukázky */
+  --bg:#040a0b; --bg-2:#071113; --panel:#0c191b; --panel-2:#102124; --line:#182b2e; --line-2:#21393d;
+  --text:#e6f1ec; --soft:#b5c8c2; --muted:#7e958f; --faint:#4e6460;
+  --accent:#CDFF9B; --accent-rgb:205 255 155; --accent-2:#a5d86f; --accent-hi:#ddffbb; --accent-ink:#142a05;
+  --ice:#9fd8e0; --ice-rgb:159 216 224; --bg-rgb:4 10 11; --aur2:40 140 120; --aur3:60 120 90;
+  --grid-rgb:150 190 180; --wire:#244043;
+  --bad:#f6a77f; --bad-rgb:246 167 127; --warn:#f2d27a;
+  --glow:rgb(var(--accent-rgb) / .35); --accent-dim:rgb(var(--accent-rgb) / .10);
+  --r:14px;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --sans:"Onest",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+:root[data-theme="paper"]{
+  color-scheme:light;
+  --bg:#f5f2ec; --bg-2:#eeeae2; --panel:#fffdf9; --panel-2:#f4f0e8; --line:#e2dccf; --line-2:#d3ccbd;
+  --text:#1c1a17; --soft:#3d3933; --muted:#6c665c; --faint:#9d968a;
+  --accent:#0f7a5c; --accent-rgb:15 122 92; --accent-2:#0b6049; --accent-hi:#13926e; --accent-ink:#ffffff;
+  --ice:#2f6aa3; --ice-rgb:47 106 163; --bg-rgb:245 242 236; --aur2:120 200 170; --aur3:225 205 170;
+  --grid-rgb:70 65 55; --wire:#c4bcab;
+  --bad:#c2410c; --bad-rgb:194 65 12; --warn:#946200;
+  --glow:rgb(var(--accent-rgb) / .18);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+code{font-family:var(--mono);font-size:.88em;background:var(--panel-2);border:1px solid var(--line);padding:.05em .4em;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono)}
+html[lang="cs"] .en{display:none !important}
+html[lang="en"] .cs{display:none !important}
+
+/* pozadí */
+.bg{position:fixed;inset:0;z-index:-5;overflow:hidden;pointer-events:none;background:
+  radial-gradient(900px 500px at 85% 10%,rgb(var(--aur2) / .10),transparent 70%),
+  radial-gradient(800px 600px at 10% 90%,rgb(var(--accent-rgb) / .07),transparent 70%),var(--bg)}
+.bg .grid{position:absolute;inset:-64px;
+  background-image:linear-gradient(rgb(var(--grid-rgb) / .07) 1px,transparent 1px),linear-gradient(90deg,rgb(var(--grid-rgb) / .07) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(ellipse 85% 75% at 50% 40%,#000 25%,transparent 85%)}
+.bg .beam{position:absolute;height:1px;width:220px;background:linear-gradient(90deg,transparent,rgb(var(--accent-rgb) / .9),transparent);opacity:0}
+.bg .beam.v{width:1px;height:220px;background:linear-gradient(180deg,transparent,rgb(var(--ice-rgb) / .9),transparent)}
+@media (prefers-reduced-motion:no-preference){
+  .bg .grid{animation:gridmove 14s linear infinite}
+  @keyframes gridmove{to{transform:translate3d(64px,64px,0)}}
+  .bg .beam{animation:beamx 9s linear infinite}
+  .bg .beam.v{animation:beamy 11s linear infinite}
+  .bg .beam:nth-of-type(3){animation-delay:-4s;animation-duration:13s}
+  @keyframes beamx{0%{transform:translateX(-260px);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateX(110vw);opacity:0}}
+  @keyframes beamy{0%{transform:translateY(-260px);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateY(110vh);opacity:0}}
+}
+
+/* navigace */
+.nav{position:sticky;top:12px;z-index:30;display:flex;justify-content:center;pointer-events:none;margin-top:12px}
+.nav .pill{pointer-events:auto;display:flex;align-items:center;gap:4px;background:rgb(var(--bg-rgb) / .94);border:1px solid var(--line-2);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 10px 40px rgba(0,0,0,.35);max-width:calc(100vw - 24px)}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:15px;margin-right:10px;text-decoration:none;white-space:nowrap}
+.logo .m{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(140deg,var(--accent),var(--accent-2));color:var(--accent-ink);font-size:15px;box-shadow:0 0 18px var(--glow)}
+.nav a.l{font-size:13.5px;color:var(--soft);text-decoration:none;padding:7px 11px;border-radius:999px;white-space:nowrap}
+.nav a.l:hover{background:var(--panel-2);color:var(--text)}
+.nav .tg{display:flex;align-items:center;gap:4px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:999px;padding:6px 10px;font-size:13px;color:var(--soft)}
+.nav .tg:hover{color:var(--text);border-color:rgb(var(--accent-rgb) / .5)}
+.nav .gh{display:flex;align-items:center;gap:6px;background:var(--text);color:var(--bg);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:600;text-decoration:none;margin-left:2px}
+@media (max-width:860px){.nav a.l{display:none}.logo{margin-right:4px}.hide-m{display:none}}
+
+/* úvod */
+.hero{position:relative;overflow:hidden;margin-top:-62px;padding:140px 0 56px;isolation:isolate;text-align:center}
+.aurora{position:absolute;inset:-20% -10% 0;z-index:-2;filter:blur(60px);opacity:.7}
+.aurora i{position:absolute;border-radius:50%;mix-blend-mode:screen}
+.aurora i:nth-child(1){width:52vw;height:38vw;left:8%;top:-6%;background:radial-gradient(closest-side,rgb(var(--accent-rgb) / .38),transparent)}
+.aurora i:nth-child(2){width:46vw;height:34vw;right:4%;top:2%;background:radial-gradient(closest-side,rgb(var(--aur2) / .38),transparent)}
+.aurora i:nth-child(3){width:40vw;height:26vw;left:34%;top:18%;background:radial-gradient(closest-side,rgb(var(--aur3) / .30),transparent)}
+:root[data-theme="paper"] .aurora i{mix-blend-mode:multiply;opacity:.55}
+@media (prefers-reduced-motion:no-preference){
+  .aurora i:nth-child(1){animation:d1 18s ease-in-out infinite alternate}
+  .aurora i:nth-child(2){animation:d2 22s ease-in-out infinite alternate}
+  .aurora i:nth-child(3){animation:d3 16s ease-in-out infinite alternate}
+  @keyframes d1{to{transform:translate(12vw,6vw) scale(1.15)}}
+  @keyframes d2{to{transform:translate(-14vw,8vw) scale(.9)}}
+  @keyframes d3{to{transform:translate(-8vw,-4vw) scale(1.25)}}
+}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgb(var(--accent-rgb) / .35);background:rgb(var(--accent-rgb) / .08);border-radius:999px;padding:5px 12px 5px 6px;font-size:13px;color:var(--soft);margin-bottom:22px}
+.badge b{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600}
+.hero h1{font-family:var(--display);font-weight:780;font-size:clamp(38px,6vw,84px);line-height:.98;letter-spacing:-.035em;margin:0 auto 20px;max-width:21ch}
+.hero h1 span{color:var(--accent);text-shadow:0 0 40px rgb(var(--accent-rgb) / .3)}
+.hero p.lead{font-size:18px;color:var(--soft);max-width:680px;margin:0 auto 30px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:11px 18px;border-radius:12px;font-weight:600;font-size:15px;border:1px solid var(--line-2);background:rgb(var(--bg-rgb) / .85);color:var(--text)}
+.btn:hover{border-color:rgb(var(--accent-rgb) / .5)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:0 0 24px var(--glow)}
+.btn.primary:hover{background:var(--accent-hi)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:880px;margin:38px auto 0}
+.stat{background:rgb(var(--bg-rgb) / .8);border:1px solid var(--line-2);border-radius:var(--r);padding:14px 10px}
+.stat b{display:block;font-family:var(--display);font-size:30px;line-height:1.05;color:var(--accent)}
+.stat span{font-size:12.5px;color:var(--muted)}
+.honest{max-width:760px;margin:26px auto 0;text-align:left;padding:14px 16px;border:1px solid var(--line-2);border-left:3px solid var(--accent);background:rgb(var(--bg-rgb) / .8);border-radius:10px;color:var(--soft);font-size:14.5px}
+.honest b{color:var(--text)}
+@media (max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.stat:last-child{grid-column:span 2}}
+
+/* sekce */
+.sec{margin-top:92px;scroll-margin-top:70px}
+.sec h2{font-family:var(--display);font-weight:760;font-size:clamp(28px,3.4vw,46px);line-height:1.04;letter-spacing:-.03em;margin:0 0 12px;max-width:22ch}
+.sec h2 span{color:var(--accent)}
+.sec p.sub{color:var(--soft);font-size:16.5px;max-width:680px;margin:0 0 30px}
+.panel{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line-2);border-radius:18px}
+
+/* karty */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{padding:18px;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);display:flex;flex-direction:column;gap:6px;transition:border-color .25s,transform .25s}
+.card:hover{border-color:rgb(var(--accent-rgb) / .5);transform:translateY(-2px)}
+.card i{font-size:24px;color:var(--accent)}
+.card h3{font-family:var(--display);font-size:18px;margin:4px 0 0;letter-spacing:-.01em}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.card .n{margin-top:auto;padding-top:8px;font-family:var(--mono);font-size:12px;color:var(--accent)}
+@media (max-width:980px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.cards{grid-template-columns:1fr}}
+
+/* průzkumník testů */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px;border-bottom:1px solid var(--line)}
+.chip{background:rgb(var(--bg-rgb) / .85);border:1px solid var(--line-2);border-radius:999px;padding:6px 13px;font-size:13px;color:var(--soft)}
+.chip:hover{border-color:rgb(var(--accent-rgb) / .5);color:var(--text)}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.chip small{font-family:var(--mono);opacity:.75;margin-left:4px}
+.search{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line-2);border-radius:10px;color:var(--text);font:inherit;font-size:14px;padding:8px 12px;outline:none}
+.search:focus{border-color:rgb(var(--accent-rgb) / .6);box-shadow:0 0 0 3px var(--accent-dim)}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.04em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);text-transform:uppercase;white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover{background:rgb(var(--accent-rgb) / .04)}
+.tid{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap}
+.tid.bug{color:var(--bad)}
+.ty{font-family:var(--mono);font-size:11px;border:1px solid var(--line-2);border-radius:999px;padding:1px 8px;color:var(--soft);white-space:nowrap}
+.dots{display:flex;gap:7px}
+.d{width:11px;height:11px;border-radius:50%;display:inline-block;border:1.5px solid var(--faint)}
+.d.ok{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--glow)}
+.d.bug{background:var(--bad);border-color:var(--bad)}
+.d.flaky{background:var(--warn);border-color:var(--warn)}
+.d.skip{background:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:16px;padding:12px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);align-items:center}
+.legend .d{margin-right:6px;vertical-align:-1px}
+.more{display:block;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:12px;color:var(--accent);font-weight:600}
+.more:hover{background:rgb(var(--accent-rgb) / .06)}
+.scroll-x{overflow-x:auto}
+@media (max-width:720px){
+  .tbl .hm,.tbl thead{display:none}
+  .tbl,.tbl tbody{display:block}
+  .tbl tr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:0;border:0}
+  .tbl td:nth-child(2){grid-column:1/-1;order:3;color:var(--soft)}
+}
+
+/* chyby */
+.bugs{padding:14px;display:flex;flex-direction:column;gap:8px}
+.bug{background:var(--panel);border:1px solid var(--line-2);border-radius:12px;overflow:hidden}
+.bug summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:13px 15px}
+.bug summary::-webkit-details-marker{display:none}
+.bug summary::after{content:"+";margin-left:auto;color:var(--muted);font-size:20px;font-family:var(--mono)}
+.bug[open] summary::after{content:"−"}
+.bug[open]{border-color:rgb(var(--accent-rgb) / .4)}
+.bid{font-family:var(--mono);font-size:12.5px;color:var(--accent);flex:none}
+.bt{font-weight:600}
+.sev{font-family:var(--mono);font-size:11px;padding:2px 9px;border-radius:999px;border:1px solid currentColor;flex:none}
+.sev.High{color:var(--bad)} .sev.Medium{color:var(--warn)} .sev.Low{color:var(--ice)}
+.bb{padding:2px 16px 16px;border-top:1px solid var(--line)}
+.bb h4{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px;font-weight:500}
+.bb ol{margin:0 0 0 20px;color:var(--soft)}
+.bb p{margin:0;color:var(--soft)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.meta{margin-top:12px;font-size:13.5px;color:var(--muted)}
+.shots{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:14px;align-items:start}
+.shots.one{grid-template-columns:1fr}
+.shots img{width:100%;display:block;border-radius:10px;border:1px solid var(--line-2)}
+.shots figcaption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+.shots figure{margin:0}
+@media (max-width:720px){.two,.shots{grid-template-columns:1fr}.bug summary{flex-wrap:wrap}}
+
+/* graf rychlosti */
+.chart{padding:22px}
+.row{display:grid;grid-template-columns:200px 1fr 80px;gap:12px;align-items:center;margin:10px 0}
+.row .u{font-family:var(--mono);font-size:12.5px;color:var(--soft)}
+.row .bar{height:22px;background:var(--bg);border:1px solid var(--line);border-radius:7px;position:relative;overflow:hidden}
+.row .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,rgb(var(--accent-rgb) / .35),var(--accent));border-radius:6px;width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.row.slow .bar i{background:linear-gradient(90deg,rgb(var(--bad-rgb) / .35),var(--bad))}
+.row .v{font-family:var(--mono);font-size:13px;text-align:right}
+.limit{position:relative;height:0}
+.note-s{margin-top:14px;font-size:13px;color:var(--muted)}
+@media (max-width:640px){.row{grid-template-columns:1fr 70px}.row .bar{grid-column:1/-1;order:3}}
+
+/* strategie */
+.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.box{padding:20px}
+.box h3{font-family:var(--display);font-size:19px;margin:0 0 10px;letter-spacing:-.01em}
+.risk{width:100%;border-collapse:collapse;font-size:13.5px}
+.risk td,.risk th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.risk th{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase}
+.p{font-family:var(--mono);font-size:11.5px;border-radius:6px;padding:1px 7px}
+.p1{background:rgb(var(--bad-rgb) / .15);color:var(--bad)} .p2{background:rgb(242 210 122 / .14);color:var(--warn)} .p3{background:rgb(var(--ice-rgb) / .13);color:var(--ice)}
+ul.clean{margin:0;padding-left:18px;color:var(--soft)} ul.clean li{margin:6px 0}
+.q{padding:10px 12px;border:1px dashed var(--line-2);border-radius:10px;color:var(--soft);font-size:14px;margin-top:8px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+
+/* AI */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;counter-reset:s}
+.step{padding:18px;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r)}
+.step::before{counter-increment:s;content:"0" counter(s);display:block;font-family:var(--mono);color:var(--accent);margin-bottom:6px}
+.step b{display:block;margin-bottom:4px;font-family:var(--display);font-size:17px}
+.step span{font-size:14px;color:var(--muted)}
+@media (max-width:980px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.story{margin-top:12px;padding:18px 20px;border:1px solid rgb(var(--accent-rgb) / .35);background:rgb(var(--accent-rgb) / .05);border-radius:var(--r);color:var(--soft)}
+.story b{color:var(--text)}
+
+/* spuštění */
+pre{margin:0;background:var(--bg);border:1px solid var(--line-2);border-radius:12px;padding:16px 18px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--soft)}
+pre .c{color:var(--faint)}
+.copy{margin-top:10px}
+.files{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.files div{padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:13.5px;color:var(--muted)}
+.files code{color:var(--accent)}
+@media (max-width:720px){.files{grid-template-columns:1fr}}
+footer{margin:90px 0 0;padding:26px 0 50px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="grid"></div><i class="beam" style="top:192px"></i><i class="beam" style="top:520px"></i><i class="beam v" style="left:18%"></i></div>
+
+<nav class="nav" aria-label="Menu">
+  <div class="pill">
+    <a class="logo" href="#top"><span class="m"><i class="ph-bold ph-check"></i></span><span>QA&nbsp;Lab</span></a>
+    <a class="l" href="#co"><span class="cs">Co je uvnitř</span><span class="en">Inside</span></a>
+    <a class="l" href="#testy"><span class="cs">Testy</span><span class="en">Tests</span></a>
+    <a class="l" href="#chyby"><span class="cs">Chyby</span><span class="en">Bugs</span></a>
+    <a class="l" href="#vykon"><span class="cs">Rychlost</span><span class="en">Speed</span></a>
+    <a class="l" href="#strategie"><span class="cs">Strategie</span><span class="en">Strategy</span></a>
+    <button class="tg" id="langBtn" type="button" aria-label="Language / Jazyk"><i class="ph ph-translate"></i><span id="langLbl">EN</span></button>
+    <button class="tg" id="themeBtn" type="button" aria-label="Theme"><i class="ph ph-circle-half"></i></button>
+    <a class="gh" href="https://github.com/zenkovski/qa-portfolio" target="_blank" rel="noopener"><i class="ph ph-github-logo"></i><span class="hide-m">GitHub</span></a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="wrap">
+    <div class="badge"><b>QA</b><span class="cs">Ukázkový projekt · Playwright · TypeScript</span><span class="en">Sample project · Playwright · TypeScript</span></div>
+    <h1><span class="cs">Testy, které najdou chybu <span>dřív než zákazník.</span></span><span class="en">Tests that find the bug <span>before the customer does.</span></span></h1>
+    <p class="lead">
+      <span class="cs">Automatické testy webového obchodu a veřejného API: ovládání stránky, API, přístupnost, bezpečnost, vizuální kontrola a rychlost. Běží ve čtyřech prohlížečích jedním příkazem. Každá nalezená chyba má kroky, očekávaný a skutečný výsledek a důkaz.</span>
+      <span class="en">Automated tests for a web shop and a public API: UI, API, accessibility, security, visual checks and speed. They run in four browsers with one command. Every bug found has steps, expected and actual result, and evidence.</span>
+    </p>
+    <div class="btns">
+      <a class="btn primary" href="report/" target="_blank"><i class="ph ph-chart-bar"></i><span class="cs">Živý report testů</span><span class="en">Live test report</span></a>
+      <a class="btn" href="https://github.com/zenkovski/qa-portfolio" target="_blank" rel="noopener"><i class="ph ph-github-logo"></i><span class="cs">Kód na GitHubu</span><span class="en">Code on GitHub</span></a>
+      <a class="btn" href="qa-portfolio.zip" download><i class="ph ph-download-simple"></i>zip</a>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p class="honest">
+      <span class="cs"><b>Upřímně:</b> je to cvičný projekt, ne komerční zkušenost. Jsem v testování začátečník. Pracuju s AI (Claude Code): ta píše kód a zkoumá, já rozhoduju, co je chyba, a každý výsledek kontroluju. Testuje se veřejná cvičná aplikace <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a> a cvičné API <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a>, takže se nic skutečného nedotýká. Autor: Lukáš Procházka.</span>
+      <span class="en"><b>Honest context:</b> this is a practice project, not commercial experience. I am a beginner in testing. I work with AI (Claude Code): it writes code and explores, I decide what counts as a bug and check every result. The targets are a public practice shop, <a href="https://www.saucedemo.com" target="_blank" rel="noopener">Sauce Demo</a>, and a practice API, <a href="https://restful-booker.herokuapp.com" target="_blank" rel="noopener">Restful-Booker</a>, so nothing real is touched. Author: Lukáš Procházka.</span>
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section class="sec" id="co">
+  <h2><span class="cs">Co je <span>uvnitř</span></span><span class="en">What is <span>inside</span></span></h2>
+  <p class="sub"><span class="cs">Test je malý program, který proklikává stránku nebo volá API jako člověk a kontroluje výsledek. Tady je sedm druhů, každý chytá něco jiného.</span><span class="en">A test is a small program that clicks through a page or calls an API like a person and checks the result. Here are seven kinds, each catching something different.</span></p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section class="sec" id="testy">
+  <h2><span class="cs">Všechny testy, <span>živě z posledního běhu</span></span><span class="en">Every test, <span>live from the last run</span></span></h2>
+  <p class="sub"><span class="cs">Tabulka se plní přímo z výsledků posledního spuštění. Filtruj podle druhu nebo hledej. Tečky ukazují výsledek v každém prohlížeči.</span><span class="en">The table is filled straight from the results of the last run. Filter by kind or search. Dots show the result in each browser.</span></p>
+  <div class="panel">
+    <div class="tools" id="tools"></div>
+    <div class="scroll-x"><table class="tbl"><thead><tr>
+      <th>ID</th><th><span class="cs">Co testuje</span><span class="en">What it checks</span></th><th class="hm"><span class="cs">Druh</span><span class="en">Kind</span></th>
+      <th title="Chrome · Pixel 7 · Firefox · WebKit · API">Chrome · Pixel · FF · WK · API</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <button class="more" id="moreBtn" type="button"></button>
+    <div class="legend">
+      <span><i class="d ok"></i><span class="cs">prošel</span><span class="en">passed</span></span>
+      <span><i class="d bug"></i><span class="cs">očekávané selhání = známá chyba</span><span class="en">expected failure = known bug</span></span>
+      <span><i class="d flaky"></i><span class="cs">nestabilní (prošel až na opakování)</span><span class="en">flaky (passed on retry)</span></span>
+      <span><i class="d skip"></i><span class="cs">nespuštěn (test nedává v tomto prohlížeči smysl)</span><span class="en">skipped (not meaningful in this browser)</span></span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="chyby">
+  <h2><span class="cs">18 chyb, <span>každá s důkazem</span></span><span class="en">18 bugs, <span>each with evidence</span></span></h2>
+  <p class="sub"><span class="cs">Chyba je zapsaná i jako test s <code>test.fail()</code>: sada zůstává zelená, dokud chyba existuje, a po opravě test sám upozorní. Závažnost je moje hodnocení. Popisy chyb jsou anglicky, jak se v praxi píšou.</span><span class="en">A bug is also written as a test with <code>test.fail()</code>: the suite stays green while the bug exists, and the test says so once it is fixed. Severity is my own assessment.</span></p>
+  <div class="panel">
+    <div class="tools" id="bugTools"></div>
+    <div class="bugs" id="bugs"></div>
+  </div>
+</section>
+
+<section class="sec" id="vykon">
+  <h2><span class="cs">Rychlost <span>přihlášení</span></span><span class="en">Login <span>speed</span></span></h2>
+  <p class="sub"><span class="cs">Čas od kliknutí na Login do zobrazení katalogu. Pět běhů pro každý účet, bere se medián, protože jeden pomalý běh (výkyv sítě) by zkreslil průměr. Hodnoty jsou z posledního běhu.</span><span class="en">Time from clicking Login until the catalog is visible. Five runs per account; the median is used because one slow run (a network hiccup) would spoil an average. Values are from the last run.</span></p>
+  <div class="panel chart" id="chart"></div>
+</section>
+
+<section class="sec" id="strategie">
+  <h2><span class="cs">Co testovat <span>jako první</span></span><span class="en">What to test <span>first</span></span></h2>
+  <p class="sub"><span class="cs">Nejde otestovat všechno, tak řadím podle toho, co by bolelo nejvíc a co se nejspíš pokazí. Celá strategie je v <code>docs/TEST-STRATEGY.md</code>.</span><span class="en">Everything cannot be tested, so I rank by what would hurt most and what is most likely to break. The full strategy is in <code>docs/TEST-STRATEGY.md</code>.</span></p>
+  <div class="grid2">
+    <div class="panel box">
+      <h3><span class="cs">Priority podle rizika</span><span class="en">Risk-based priorities</span></h3>
+      <table class="risk"><thead><tr><th><span class="cs">Oblast</span><span class="en">Area</span></th><th>P</th><th><span class="cs">Proč</span><span class="en">Why</span></th></tr></thead><tbody>
+        <tr><td><span class="cs">Přihlášení a session</span><span class="en">Login and session</span></td><td><span class="p p1">P1</span></td><td><span class="cs">Všechno stojí na něm. Našla se díra (BUG-011).</span><span class="en">Everything depends on it. A hole was found (BUG-011).</span></td></tr>
+        <tr><td><span class="cs">Košík a pokladna</span><span class="en">Cart and checkout</span></td><td><span class="p p1">P1</span></td><td><span class="cs">Tady jsou peníze. Nejvíc chyb (BUG-003, 004, 006, 007, 014).</span><span class="en">This is where the money is. Most bugs (BUG-003, 004, 006, 007, 014).</span></td></tr>
+        <tr><td><span class="cs">Ceny</span><span class="en">Prices</span></td><td><span class="p p1">P1</span></td><td><span class="cs">Špatná cena = ztráta důvěry (BUG-008).</span><span class="en">A wrong price = lost trust (BUG-008).</span></td></tr>
+        <tr><td><span class="cs">Řazení a obrázky</span><span class="en">Sorting and images</span></td><td><span class="p p2">P2</span></td><td><span class="cs">Vidět, otravné, nic se neztratí.</span><span class="en">Visible and annoying, nothing is lost.</span></td></tr>
+        <tr><td><span class="cs">Přístupnost, rychlost</span><span class="en">Accessibility, speed</span></td><td><span class="p p2">P2</span></td><td><span class="cs">Levně se kontrolují automaticky.</span><span class="en">Cheap to check automatically.</span></td></tr>
+        <tr><td><span class="cs">Vzhled</span><span class="en">Layout</span></td><td><span class="p p3">P3</span></td><td><span class="cs">Potřebuje kontrolu pixelů, locator to nevidí.</span><span class="en">Needs a pixel check; a locator cannot see it.</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel box">
+      <h3><span class="cs">Otázky pro product ownera</span><span class="en">Questions for the product owner</span></h3>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 6px"><span class="cs">Dokud nedostanu odpověď, není to chyba, jen otázka.</span><span class="en">Until I get an answer, it is a question, not a bug.</span></p>
+      <div class="q"><span class="cs">Má se PSČ ověřovat (číslice, délka)? Teď přijme cokoli, i 300 znaků.</span><span class="en">Should the postal code be validated (digits, length)? It accepts anything now, even 300 characters.</span></div>
+      <div class="q"><span class="cs">Je jméno o 300 znacích v pořádku, nebo má mít limit?</span><span class="en">Is a 300-character name fine, or should there be a limit?</span></div>
+      <div class="q"><span class="cs">Mají všechny účty vidět stejné ceny? (<code>visual_user</code> vidí jiné, beru to jako chybu.)</span><span class="en">Should all accounts see the same prices? (<code>visual_user</code> sees different ones; I treat it as a bug.)</span></div>
+      <h3 style="margin-top:18px"><span class="cs">Co není pokryté</span><span class="en">Not covered</span></h3>
+      <ul class="clean">
+        <li><span class="cs">Skutečná mobilní zařízení a nativní aplikace (potřeboval bych Maestro nebo Appium).</span><span class="en">Real mobile devices and native apps (would need Maestro or Appium).</span></li>
+        <li><span class="cs">Zátěžové testy: veřejný web, který nevlastním, se nezatěžuje.</span><span class="en">Load tests: a public site I do not own is not loaded.</span></li>
+        <li><span class="cs">Čtečka obrazovky (NVDA, VoiceOver): automat nenajde všechno.</span><span class="en">Screen reader (NVDA, VoiceOver): automation does not find everything.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="ai">
+  <h2><span class="cs">Jak jsem pracoval <span>s AI</span></span><span class="en">How I worked <span>with AI</span></span></h2>
+  <p class="sub"><span class="cs">AI zrychluje psaní, ale neví, co je důležité. Tohle dělám sám.</span><span class="en">AI speeds up the writing, but it does not know what matters. I do that part myself.</span></p>
+  <div class="steps">
+    <div class="step"><b><span class="cs">Pochopit</span><span class="en">Understand</span></b><span><span class="cs">AI prozkoumá aplikaci skriptem a sepíše popis produktu pro lidi i pro sebe.</span><span class="en">AI explores the app with a script and writes a product description for people and for itself.</span></span></div>
+    <div class="step"><b><span class="cs">Naplánovat</span><span class="en">Plan</span></b><span><span class="cs">Scénáře s prioritou. Pořadí určuje riziko, ne to, co se snadno píše.</span><span class="en">Scenarios with priorities. Risk sets the order, not what is easy to write.</span></span></div>
+    <div class="step"><b><span class="cs">Automatizovat</span><span class="en">Automate</span></b><span><span class="cs">AI generuje testy. Každý neúspěch zkoumám: je to chyba produktu, nebo testu?</span><span class="en">AI generates tests. I check every failure: product bug or test bug?</span></span></div>
+    <div class="step"><b><span class="cs">Ověřit</span><span class="en">Verify</span></b><span><span class="cs">Test, který nikdy neselže, nic neříká. Pouštím ho proti rozbitým účtům, jestli selže, když má.</span><span class="en">A test that never fails says nothing. I run it against the broken accounts to see it fail when it should.</span></span></div>
+  </div>
+  <div class="story">
+    <span class="cs"><b>Příběh o chybě v mém vlastním testu.</b> Po přidání prohlížeče WebKit (Safari) selhával jeden test ze čtyř pokusů z deseti. Chyba nebyla v obchodě, ale v mém testu: četl seznam produktů dřív, než se na stránce vykreslil. Řešení: počkat, až je stránka opravdu nakreslená. Potom 15 z 15 pokusů prošlo. Proto testuju ve více prohlížečích, ukázalo to slabé místo, které by v jednom nebylo vidět.</span>
+    <span class="en"><b>A story about a bug in my own test.</b> After adding the WebKit (Safari) browser, one test failed in 4 of 10 attempts. The fault was not in the shop but in my test: it read the product list before the page had drawn it. The fix: wait until the page is really drawn. After that, 15 of 15 attempts passed. This is why I test in several browsers: it showed a weak spot one browser would hide.</span>
+  </div>
+</section>
+
+<section class="sec" id="spustit">
+  <h2><span class="cs">Spusť si to <span>sám</span></span><span class="en">Run it <span>yourself</span></span></h2>
+  <p class="sub"><span class="cs">Potřebuješ Node.js. Zbytek jsou čtyři řádky.</span><span class="en">You need Node.js. The rest is four lines.</span></p>
+  <pre id="cmd"><span class="c"># 1) <span class="cs">stáhnout a nainstalovat</span><span class="en">download and install</span></span>
+git clone https://github.com/zenkovski/qa-portfolio.git &amp;&amp; cd qa-portfolio
+npm install &amp;&amp; npx playwright install
+
+<span class="c"># 2) <span class="cs">rychlá kontrola, 5 testů</span><span class="en">quick check, 5 tests</span></span>
+npm run test:smoke
+
+<span class="c"># 3) <span class="cs">všechno (UI ve 4 prohlížečích + API)</span><span class="en">everything (UI in 4 browsers + API)</span></span>
+npx playwright test
+npm run report</pre>
+  <div class="btns copy" style="justify-content:flex-start"><button class="btn" id="copyBtn" type="button"><i class="ph ph-copy"></i><span class="cs">Kopírovat příkazy</span><span class="en">Copy commands</span></button></div>
+  <div class="files">
+    <div><code>docs/TEST-STRATEGY.md</code> · <span class="cs">strategie a rizika</span><span class="en">strategy and risks</span></div>
+    <div><code>docs/TEST-SCENARIOS.md</code> · <span class="cs">scénáře s prioritou</span><span class="en">scenarios with priority</span></div>
+    <div><code>reports/BUG-REPORTS.md</code> · <span class="cs">všech 18 chyb</span><span class="en">all 18 bugs</span></div>
+    <div><code>tests/</code> · <span class="cs">UI, API, a11y, bezpečnost, vizuální, rychlost</span><span class="en">UI, API, a11y, security, visual, speed</span></div>
+    <div><code>tests/pages/</code> · <span class="cs">Page Objects (selektory na jednom místě)</span><span class="en">Page Objects (selectors in one place)</span></div>
+    <div><code>.github/workflows/</code> · <span class="cs">spuštění na GitHubu: smoke při každém pushi, celé každé pondělí</span><span class="en">GitHub run: smoke on every push, full every Monday</span></div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  <span class="cs">Lukáš Procházka · cvičný QA projekt · postaveno s Claude Code</span><span class="en">Lukáš Procházka · practice QA project · built with Claude Code</span>
+  <span id="runInfo"></span>
+</div></footer>
+
+<script>
+const TESTS = {{TESTS_JSON}};
+const BUGS = {{BUGS_JSON}};
+const PERF = {{PERF_JSON}};
+const STATS = {{STATS_JSON}};
+
+const root = document.documentElement;
+const ls = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+
+/* jazyk a vzhled */
+let lang = ls.get('qa-lang') || ((navigator.language||'cs').toLowerCase().startsWith('cs') ? 'cs' : 'en');
+const q = new URLSearchParams(location.search).get('lang'); if (q === 'cs' || q === 'en') lang = q;
+function setLang(l){ lang = l; root.lang = l; document.getElementById('langLbl').textContent = l === 'cs' ? 'EN' : 'CZ'; ls.set('qa-lang', l); render(); }
+document.getElementById('langBtn').onclick = () => setLang(lang === 'cs' ? 'en' : 'cs');
+let theme = ls.get('qa-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'dark');
+function setTheme(t){ theme = t; if (t === 'paper') root.dataset.theme = 'paper'; else delete root.dataset.theme; ls.set('qa-theme', t); }
+document.getElementById('themeBtn').onclick = () => setTheme(theme === 'paper' ? 'dark' : 'paper');
+setTheme(theme);
+
+const L = (cs, en) => lang === 'cs' ? cs : en;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* statistiky */
+function renderStats(){
+  const items = [
+    [STATS.cases, L('testovacích případů','test cases')],
+    [STATS.runs, L('spuštění v prohlížečích a API','runs across browsers and API')],
+    [STATS.bugs, L('nalezených chyb','bugs found')],
+    [STATS.browsers, L('prohlížeče + telefon + API','browsers + phone + API')],
+    [STATS.minutes, L('celý běh (min)','full run (min)')],
+  ];
+  document.getElementById('stats').innerHTML = items.map(([n,t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join('');
+  document.getElementById('runInfo').textContent = L('Poslední běh: ','Last run: ') + STATS.when + ' · ' + STATS.passed + ' ' + L('prošlo','passed') + ', ' + STATS.expected + ' ' + L('známých chyb','known bugs') + ', ' + STATS.flaky + ' ' + L('nestabilních','flaky') + ', ' + STATS.failed + ' ' + L('selhalo','failed');
+}
+
+/* karty */
+const KINDS = [
+  ['ui',       'ph-cursor-click',   L('Ovládání stránky','UI flows'),        L('Přihlášení, katalog, košík, pokladna. Smoke sada (5 testů) řekne za pár sekund, jestli obchod žije.','Login, catalog, cart, checkout. The smoke set (5 tests) tells in seconds whether the shop is alive.')],
+  ['api',      'ph-plugs-connected',L('API','API'),                          L('Vytvoř, přečti, změň, smaž. Kontrakt (typy polí), práva, špatné vstupy. Každý test po sobě uklidí.','Create, read, update, delete. Contract (field types), permissions, bad input. Every test cleans up after itself.')],
+  ['a11y',     'ph-wheelchair',     L('Přístupnost','Accessibility'),        L('axe-core, pravidla WCAG A a AA na čtyřech stránkách, ovládání jen klávesnicí, popisky obrázků.','axe-core, WCAG A and AA rules on four pages, keyboard-only use, image alt text.')],
+  ['security', 'ph-shield-check',   L('Bezpečnost','Security'),              L('Padělaná session, příznaky cookie, skript ve vstupech, https. Jen kontroly, které zvládne tester z prohlížeče.','Forged session, cookie flags, script in inputs, https. Only checks a tester can do from the browser.')],
+  ['visual',   'ph-eye',            L('Vizuální kontrola','Visual check'),   L('Porovnání pixelů uvnitř jednoho běhu, bez uložených obrázků. Funguje na každém počítači.','Pixel comparison inside one run, with no stored images. Works on any computer.')],
+  ['perf',     'ph-timer',          L('Rychlost','Speed'),                   L('Čas přihlášení, medián z pěti běhů pro každý účet. Výsledek jde do grafu níž.','Login time, median of five runs per account. The result feeds the chart below.')],
+  ['bug',      'ph-bug',            L('Známé chyby jako testy','Known bugs as tests'), L('Chyba zapsaná jako test. Dokud existuje, sada je zelená. Po opravě test sám upozorní.','A bug written as a test. While it exists the suite stays green. After the fix the test raises the alarm.')],
+  ['x',        'ph-browsers',       L('Více prohlížečů','Cross-browser'),    L('Chrome, Firefox, WebKit (Safari) a emulace telefonu Pixel 7. Našlo i chybu v mém vlastním testu.','Chrome, Firefox, WebKit (Safari) and a Pixel 7 phone emulation. It even found a bug in my own test.')],
+];
+function renderCards(){
+  document.getElementById('cards').innerHTML = KINDS.map(([k,ic,t,d]) => {
+    const n = k === 'x' ? STATS.browsers : (STATS.byKind[k] ?? 0);
+    const unit = k === 'x' ? L('prostředí','environments') : L('testů','tests');
+    return `<div class="card"><i class="ph ${ic}"></i><h3>${t}</h3><p>${d}</p><div class="n">${n} ${unit}</div></div>`;
+  }).join('');
+}
+
+/* průzkumník testů */
+const FILTERS = [['all',L('Vše','All')],['smoke','Smoke'],['regression','Regression'],['api','API'],['a11y','A11y'],['security',L('Bezpečnost','Security')],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['bug',L('Jen známé chyby','Known bugs only')]];
+let flt = 'all', term = '', showAll = false;
+const COLS = ['desktop-chrome','mobile-pixel','desktop-firefox','desktop-webkit','api'];
+function filtered(){
+  return TESTS.filter(t => (flt === 'all' || (flt === 'bug' ? t.bug : t.kind === flt)) && (!term || (t.id + ' ' + t.title).toLowerCase().includes(term)));
+}
+function renderTools(){
+  const el = document.getElementById('tools');
+  const count = k => TESTS.filter(t => k === 'all' || (k === 'bug' ? t.bug : t.kind === k)).length;
+  el.innerHTML = FILTERS.map(([k,l]) => `<button class="chip ${flt===k?'on':''}" data-k="${k}" type="button">${l}<small>${count(k)}</small></button>`).join('')
+    + `<input class="search" id="search" type="search" placeholder="${L('Hledat test…','Search a test…')}" value="${esc(term)}" aria-label="${L('Hledat test','Search a test')}">`;
+  el.querySelectorAll('.chip').forEach(b => b.onclick = () => { flt = b.dataset.k; showAll = false; renderTools(); renderTable(); });
+  const s = document.getElementById('search'); s.oninput = () => { term = s.value.trim().toLowerCase(); showAll = false; renderTable(); };
+}
+function renderTable(){
+  const rows = filtered(), cut = showAll ? rows.length : 30;
+  document.getElementById('tbody').innerHTML = rows.slice(0, cut).map(t => {
+    const dots = COLS.map(c => { const s = t.s[c]; return `<i class="d ${s ? s : 'skip'}" title="${c}: ${s || 'skipped'}"></i>`; }).join('');
+    return `<tr><td class="tid ${t.bug?'bug':''}">${esc(t.id)}</td><td>${esc(t.title)}</td><td class="hm"><span class="ty">${t.kind}</span></td><td><div class="dots">${dots}</div></td></tr>`;
+  }).join('') || `<tr><td colspan="4" style="color:var(--muted)">${L('Nic nenalezeno.','Nothing found.')}</td></tr>`;
+  const b = document.getElementById('moreBtn');
+  b.style.display = rows.length > 30 ? 'block' : 'none';
+  b.textContent = showAll ? L('Zobrazit méně','Show fewer') : L(`Zobrazit všech ${rows.length} testů`, `Show all ${rows.length} tests`);
+  b.onclick = () => { showAll = !showAll; renderTable(); };
+}
+
+/* chyby */
+const BF = [['all',L('Vše','All')],['ui','UI'],['security',L('Bezpečnost','Security')],['a11y','A11y'],['visual',L('Vizuální','Visual')],['perf',L('Rychlost','Speed')],['api','API']];
+let bflt = 'all';
+function renderBugs(){
+  const tools = document.getElementById('bugTools');
+  tools.innerHTML = BF.map(([k,l]) => `<button class="chip ${bflt===k?'on':''}" data-k="${k}" type="button">${l}<small>${BUGS.filter(b=>k==='all'||b.type===k).length}</small></button>`).join('');
+  tools.querySelectorAll('.chip').forEach(b => b.onclick = () => { bflt = b.dataset.k; renderBugs(); });
+  const open = new Set([...document.querySelectorAll('.bug[open]')].map(d => d.dataset.id));
+  document.getElementById('bugs').innerHTML = BUGS.filter(b => bflt === 'all' || b.type === bflt).map(b => {
+    const shots = (b.ev || []).map(([f,cap]) => `<figure><a href="img/${f}.webp" target="_blank" rel="noopener"><img loading="lazy" src="img/${f}.webp" alt="${esc(b.id)} ${esc(cap)}"></a><figcaption>${esc(cap)}</figcaption></figure>`).join('');
+    return `<details class="bug" data-id="${b.id}" ${open.has(b.id)?'open':''}><summary><span class="bid">${b.id}</span><span class="bt">${esc(b.title)}</span><span class="sev ${b.sev}">${b.sev}</span></summary>
+      <div class="bb"><p class="meta">${esc(b.where)}</p>
+      <h4>Steps</h4><ol>${b.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      <div class="two"><div><h4>Expected</h4><p>${esc(b.exp)}</p></div><div><h4>Actual</h4><p>${esc(b.act)}</p></div></div>
+      ${b.note ? `<h4>Note</h4><p>${esc(b.note)}</p>` : ''}
+      <p class="meta">Test: <code>${esc(b.test)}</code></p>
+      ${shots ? `<div class="shots ${(b.ev||[]).length === 1 ? 'one' : ''}">${shots}</div>` : ''}</div></details>`;
+  }).join('');
+}
+
+/* graf */
+function renderChart(){
+  const users = Object.entries(PERF.users);
+  const max = Math.max(...users.map(([,v]) => v.median), 1500);
+  document.getElementById('chart').innerHTML = users.map(([u,v]) => {
+    const slow = v.median > 2000;
+    return `<div class="row ${slow?'slow':''}"><div class="u">${u}</div><div class="bar"><i data-w="${(v.median/max*100).toFixed(1)}"></i></div><div class="v">${v.median >= 1000 ? (v.median/1000).toFixed(2)+' s' : v.median+' ms'}</div></div>`;
+  }).join('') + `<p class="note-s">${L('Pomalý účet <code>performance_glitch_user</code> je ' + Math.round(PERF.users.performance_glitch_user.median / Math.max(PERF.users.standard_user.median,1)) + '× pomalejší než normální. Hodnota u běžných účtů bývá pod 0,2 s, takže ten rozdíl je příliš velký na náhodu. Naměřeno ' + PERF.runsPerUser + ' běhů na účet, ' + new Date(PERF.measuredAt).toLocaleDateString('cs-CZ') + '.', 'The slow account <code>performance_glitch_user</code> is ' + Math.round(PERF.users.performance_glitch_user.median / Math.max(PERF.users.standard_user.median,1)) + '× slower than a normal one. Normal accounts are usually under 0.2 s, so the gap is far too big to be chance. Measured over ' + PERF.runsPerUser + ' runs per account on ' + new Date(PERF.measuredAt).toLocaleDateString('en-GB') + '.')}</p>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('#chart .bar i').forEach(i => i.style.width = i.dataset.w + '%')));
+}
+
+function render(){ renderStats(); renderCards(); renderTools(); renderTable(); renderBugs(); renderChart(); document.title = L('QA Lab · testování webu a API', 'QA Lab · web and API testing'); }
+document.getElementById('copyBtn').onclick = async () => {
+  const txt = 'git clone https://github.com/zenkovski/qa-portfolio.git && cd qa-portfolio\nnpm install && npx playwright install\nnpm run test:smoke\nnpx playwright test\nnpm run report';
+  try { await navigator.clipboard.writeText(txt); } catch(e){}
+  const b = document.getElementById('copyBtn'); const o = b.innerHTML; b.textContent = L('Zkopírováno','Copied'); setTimeout(() => b.innerHTML = o, 1400);
+};
+setLang(lang);
+</script>
+</body>
+</html>

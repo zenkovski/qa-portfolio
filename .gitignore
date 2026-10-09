@@ -2,3 +2,8 @@ node_modules/
 test-results/
 reports/html/
 playwright-report/
+evidence/*-desktop-firefox.png
+evidence/*-desktop-webkit.png
+reports/results.json
+_*.png
+site/

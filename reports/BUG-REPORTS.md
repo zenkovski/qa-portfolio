@@ -1,7 +1,7 @@
 # Bug reports — Sauce Demo (https://www.saucedemo.com)
 
-Found by running the automated suite in `tests/known-bugs.spec.ts` plus manual exploration.
-Every bug below was reproduced on **desktop Chrome and a Pixel 7 emulation**.
+Found by running the automated suite (`tests/known-bugs.spec.ts`, `a11y`, `security`, `boundary`, `visual`, `api`) plus manual exploration.
+UI bugs were reproduced on **desktop Chrome, Firefox, WebKit (Safari engine) and a Pixel 7 emulation**.
 Severity and priority are my own assessment.
 
 Password for all test accounts: `secret_sauce` (published on the login page of this practice app).
@@ -18,6 +18,14 @@ Password for all test accounts: `secret_sauce` (published on the login page of t
 | BUG-008 | visual_user | Catalog | Prices do not match the price list | High |
 | BUG-009 | visual_user | Catalog | First product shows the wrong image (a dog photo) | Low |
 | BUG-010 | performance_glitch_user | Login | Login takes about 5.5 s instead of under 1 s | Medium |
+| BUG-011 | all | Security | A made-up session cookie opens the catalog without login | High |
+| BUG-012 | all | Security | Session cookie has no HttpOnly / Secure flag | Medium |
+| BUG-013 | all | Accessibility | No main heading, content outside landmarks | Low |
+| BUG-014 | standard_user | Checkout | Fields with only spaces pass the required check | Medium |
+| BUG-015 | visual_user | Catalog | Cart icon moved out of place in the header | Low |
+| BUG-API-01 | API | Auth | Wrong password answers 200 instead of 401 | Medium |
+| BUG-API-02 | API | Validation | Missing fields answer 500 instead of 400 | Medium |
+| BUG-API-03 | API | Delete | Successful delete answers 201 instead of 204 | Low |
 
 ---
 
@@ -121,6 +129,112 @@ Same steps and result as BUG-003, with the account `error_user`. Badge shows 3 i
 **Expected:** under 2 seconds (`standard_user`: about 0.4 s in my runs).
 **Actual:** about **5.5 seconds** (5511 ms on desktop, 5497 ms on the mobile emulation). The sort menu is also not usable right after the page appears.
 **Test:** `BUG-010`
+
+---
+
+## BUG-011 — A made-up session cookie opens the catalog without a login (all accounts)
+
+**Severity:** High (security: authentication can be skipped)
+
+**Steps**
+1. Open https://www.saucedemo.com in a fresh browser profile (not logged in).
+2. In developer tools set a cookie: name `session-username`, value `standard_user`, path `/`.
+3. Open https://www.saucedemo.com/inventory.html.
+
+**Expected:** access is refused, because no login happened ("You can only access '/inventory.html' when you are logged in.").
+**Actual:** the catalog opens and the shop works as `standard_user`. The "session" is only a plain user name stored in a cookie that anyone can type, so anyone can act as any known account.
+**Note:** Sauce Demo is a practice shop with public passwords, so this is a design weakness, not a real leak. In a real product this would be a top-priority finding.
+**Test:** `BUG-011` (`tests/security.spec.ts`) · **Evidence:** `evidence/BUG-011-*.png`
+
+---
+
+## BUG-012 — The session cookie has no HttpOnly and no Secure flag
+
+**Severity:** Medium (security)
+
+**Steps**
+1. Log in as `standard_user`.
+2. In developer tools open Application → Cookies → `session-username`.
+
+**Expected:** `HttpOnly` and `Secure` are set, so scripts cannot read the cookie and it is never sent over plain http.
+**Actual:** both are `false`. Together with BUG-011, a script on the page can read and reuse the session value.
+**Test:** `BUG-012` (`tests/security.spec.ts`)
+
+---
+
+## BUG-013 — Pages have no main heading and content sits outside landmarks (accessibility)
+
+**Severity:** Low (accessibility, best practice)
+
+**Steps**
+1. Open the login page and run an axe-core scan (browser extension or `@axe-core/playwright`).
+
+**Expected:** no findings.
+**Actual:** two findings, `page-has-heading-one` (the page has no `<h1>`) and `region` (the page content is not inside landmark elements such as `<main>`). Screen-reader users cannot jump to the main content. The catalog page has the missing `<h1>` too.
+**Good news:** zero violations of the WCAG 2.0/2.1 A and AA rules on login, catalog, cart and checkout (colour contrast, labels, alt text); all 6 product images have alt text; login works with the keyboard only.
+**Test:** `BUG-013` (`tests/a11y.spec.ts`)
+
+---
+
+## BUG-014 — Checkout accepts fields that contain only spaces
+
+**Severity:** Medium (order with an empty name is possible)
+
+**Steps**
+1. Log in as `standard_user`, add a product, open the cart, click Checkout.
+2. Type five spaces in First Name, `Novák` in Last Name, `11000` in Postal Code (or: valid names and spaces in Postal Code). Click Continue.
+
+**Expected:** error "First Name is required" (or "Postal Code is required").
+**Actual:** the overview page opens and the order can be finished. The "required" check only tests for an empty field, not for blank text.
+**Test:** `BUG-014`, `BUG-014b` (`tests/boundary.spec.ts`) · **Evidence:** `evidence/BUG-014-*.png`
+
+---
+
+## BUG-015 — visual_user: the cart icon is moved out of its place in the header
+
+**Severity:** Low (visual)
+
+**Steps**
+1. Log in as `visual_user`, then as `standard_user`. Compare the header of the catalog.
+
+**Expected:** the cart icon sits at the top right, as for `standard_user`.
+**Actual:** the cart icon is displaced down and to the left, above the sort menu. The menu icon is also drawn slightly differently. A pixel comparison of the header strip finds 344 different pixels at 1280×800, the same number on every run, so the defect is deterministic.
+**Why a pixel test:** this is easy to miss when looking at the page and impossible to check with a text locator, since the element is still there. Comparison is done inside one run (no stored baseline image), so it works on any computer.
+**Test:** `BUG-015` (`tests/visual.spec.ts`) · **Evidence:** `evidence/BUG-015-desktop-chrome.png` (page), `…-diff.png` (red = different pixels)
+
+---
+
+# API bugs — Restful-Booker (https://restful-booker.herokuapp.com)
+
+A public practice API for testers. Tests are in `tests/api/booker.api.spec.ts`. Every booking a test creates is deleted by the test, and all names start with `QA-Lukas`.
+
+## BUG-API-01 — Wrong password answers HTTP 200
+
+**Severity:** Medium
+
+**Steps:** `POST /auth` with `{"username":"admin","password":"wrong"}`.
+**Expected:** `401 Unauthorized`.
+**Actual:** `200 OK` with the body `{"reason":"Bad credentials"}`. A client that checks only the status code treats the login as successful. (There is no token in the body, which `TC-API-20` confirms.)
+
+---
+
+## BUG-API-02 — Missing required fields answer HTTP 500
+
+**Severity:** Medium
+
+**Steps:** `POST /booking` with only `{"firstname":"QA-Lukas"}`.
+**Expected:** `400 Bad Request` with a message naming the missing fields.
+**Actual:** `500 Internal Server Error` and the plain text body `Internal Server Error`. Bad input from a client is reported as a server crash, so it is hard to tell a client mistake from a real outage.
+
+---
+
+## BUG-API-03 — A successful delete answers 201 Created
+
+**Severity:** Low
+
+**Steps:** create a booking, then `DELETE /booking/{id}` with a valid token.
+**Expected:** `204 No Content` (or `200 OK`).
+**Actual:** `201 Created`, a status that means "something was created". The delete itself works (a later `GET` gives 404, see `TC-API-17`).
 
 ---
 
