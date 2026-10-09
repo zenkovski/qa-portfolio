@@ -80,6 +80,11 @@ The tests run against public sites over the internet. Two things I learned:
 
 What stays with a human: deciding what counts as a bug and how severe it is, and checking that a passing test really tests something.
 
+## Related project
+
+[**rag-demo**](https://github.com/zenkovski/rag-demo) applies the same habits to an AI system: a Czech labour-law assistant with a measurement lab
+(Recall@k, MRR, confidence intervals, dev / validation / test splits), a failure gallery, a threat model and a CI quality gate that fails with a list of questions.
+
 ## Limits
 
 - The targets are practice apps, so many bugs are placed there on purpose. The value is the method, not the discovery.
